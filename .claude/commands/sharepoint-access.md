@@ -1,8 +1,11 @@
 ---
 description: Grant or remove SharePoint Online access — internal users, external guests, library/folder scope, and the "access denied after granting" gotcha. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /sharepoint-access
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Prefer **group-based** access (add the user to the site's M365 group / a SharePoint group) over one-off direct sharing — it's auditable and survives offboarding. External access only works if **external sharing is enabled** at both tenant and site level.
 
@@ -11,6 +14,8 @@ description: Grant or remove SharePoint Online access — internal users, extern
 - What scope: whole site, a library, or a single folder?
 
 ## Step-by-step fix (portal first)
+
+> **PREVIEW ONLY [sharepoint-grant-portal]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Internal user:**
 1. Go to the site → **Settings (gear) → Site permissions**.
@@ -22,19 +27,39 @@ description: Grant or remove SharePoint Online access — internal users, extern
 1. SharePoint admin → Policies → **Sharing** → ensure external sharing allows guests (tenant + site).
 2. Share the site/item → enter `[USER@DOMAIN.COM]` → set permission → they get an email + complete guest sign-in.
 
-**Remove access:** Site permissions → remove from group; or item → Manage access → **Stop sharing** / remove the guest from Entra → External Identities if fully offboarding.
+<!-- SAFETY GATE [sharepoint-access-revoke-portal] -->
+- **Target:** [UPN] in [SITE_NAME] Members
+- **Effect:** remove every site permission inherited from that group
+- **Scope:** one user and one SharePoint site group
+- **Reversibility:** reversible by adding the user back to the same group
+- **Required confirmation:** Type exactly `REMOVE [UPN] FROM [SITE_NAME] MEMBERS`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [sharepoint-access-revoke-portal]:** Only after the exact match, remove `[UPN]` from `[SITE_NAME] Members`. **Stop sharing** and deleting an Entra guest have different scope and require their own action-specific confirmation.
 
 <details>
 <summary>PowerShell — for reference only (PnP / SPO module)</summary>
 
 ```powershell
 Connect-PnPOnline -Url "https://[@Aegion_DOMAIN_SP]/sites/[SITE_NAME]" -Interactive  # connect to the site
-# Add internal user to the Members (edit) group
-Add-PnPGroupMember -LoginName "[UPN]" -Group "[SITE_NAME] Members"   # grant edit via group
-# Grant access to a specific folder (item-level)
-Set-PnPListItemPermission -List "Documents" -Identity 1 -User "[UPN]" -AddRole "Edit"  # folder-scoped edit
+# PREVIEW ONLY [sharepoint-member-grant] — non-executing site permission-grant reference.
+# Add-PnPGroupMember -LoginName "[UPN]" -Group "[SITE_NAME] Members"
+# PREVIEW ONLY [sharepoint-item-grant] — non-executing item-level permission-grant reference.
+# Set-PnPListItemPermission -List "Documents" -Identity 1 -User "[UPN]" -AddRole "Edit"
 # Remove a user from the site group
-Remove-PnPGroupMember -LoginName "[UPN]" -Group "[SITE_NAME] Members"  # revoke access
+# SAFETY GATE [sharepoint-access-revoke]
+# Target: [UPN] in [SITE_NAME] Members
+# Effect: removes every site permission inherited from that group
+# Scope: one user and one SharePoint site group
+# Reversibility: reversible by adding the user back to the same group
+$requiredConfirmation = "REMOVE [UPN] FROM [SITE_NAME] MEMBERS"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm"
+if ($confirmation -ceq $requiredConfirmation) {
+    Remove-PnPGroupMember -LoginName "[UPN]" -Group "[SITE_NAME] Members" -ErrorAction Stop  # revoke access
+    $remaining = @(Get-PnPGroupMember -Identity "[SITE_NAME] Members" -ErrorAction Stop | Where-Object { [string]$_.Email -ceq '[UPN]' -or [string]$_.LoginName -ceq '[UPN]' })
+    if ($remaining.Count -ne 0) { throw "Removal returned but the user is still present on group read-back." }
+} else {
+    throw "Confirmation did not match. No change was made."
+}
 ```
 </details>
 
@@ -49,4 +74,4 @@ Remove-PnPGroupMember -LoginName "[UPN]" -Group "[SITE_NAME] Members"  # revoke 
 - [ ] Access removed cleanly when revoking
 
 ## 📝 Jira-ready note
-> Resolved [date/time]. Granted `[UPN]` [view/edit/full] access to `[SITE_NAME]` [site/library/folder] via [SharePoint group / M365 group]. [External: guest invited + accepted.] User confirmed access. Time spent: [X] min.
+> Resolved [date/time]. SharePoint action for `[UPN]` on `[SITE_NAME]`: [access removal verified under this command's exact gate / grant verified under a separate reviewed workflow / no change performed]. Scope: [site/library/folder/group]. External guest state: [separately invited and verified / unchanged / not applicable]. Read-back/user confirmation: [verified result]. Time spent: [X] min.

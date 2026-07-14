@@ -10,6 +10,7 @@ node_modules/
 *secret*
 *credential*
 *password*
+!.claude/commands/password-reset.md
 Keys
 
 # Local Claude settings (may contain machine-specific paths)
@@ -36,6 +37,7 @@ replacements.txt
 .aegis-state/
 tasks/checkpoints/
 security-audit-*.md
+.security-audit-*.md.*.tmp
 hermes-escalation-log.md
 aegis-orientation.txt
 v7-apply-log.txt

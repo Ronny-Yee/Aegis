@@ -7,13 +7,18 @@ that runs on every `git commit` in this repo.
 
 ## What It Does
 
-The pre-commit hook scans every staged file for three classes of issues:
+The pre-commit hook scans every staged file for six classes of issues. Full-tree
+mode also includes non-ignored, untracked repair files so a reviewable local
+diff cannot fall outside the scan merely because it has not been staged.
 
 | Class | Severity | Effect |
 |-------|---------|--------|
 | PII (email, phone) | BLOCK | Commit is rejected — must fix before re-committing |
 | Hardcoded credentials | BLOCK | Commit is rejected |
+| Tenant/org literals | BLOCK | Commit is rejected |
+| Operational reconnaissance (privileged paths/SSH targets) | BLOCK | Commit is rejected |
 | Dangerous PowerShell / git cmdlets | WARN | Commit proceeds — operator is informed |
+| Prompt-injection markers | WARN | Commit proceeds — operator must review |
 
 ---
 
@@ -29,12 +34,14 @@ node scripts/pre-commit-check.js
 To install on a fresh clone:
 
 ```bash
-# Copy the hook from the repo into the .git/hooks directory
-cp scripts/pre-commit-check.js.hook .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
+# PREVIEW ONLY [hook-install-copy]: cp scripts/pre-commit-check.js.hook .git/hooks/pre-commit
+# PREVIEW ONLY [hook-install-mode]: chmod +x .git/hooks/pre-commit
 ```
 
-Or manually create `.git/hooks/pre-commit`:
+These installation lines are inert examples. Inspect the current destination and proposed hook source, require a no-clobber plan, and obtain a separate, repository-specific local-write approval before applying either change.
+
+The following is the proposed hook **content template only**. It does not authorize creating or replacing `.git/hooks/pre-commit`; any manual installation follows the same destination inspection, no-clobber plan, and separate local-write approval above.
+
 ```bash
 #!/bin/sh
 node scripts/pre-commit-check.js
@@ -49,15 +56,17 @@ node scripts/pre-commit-check.js
 Applied to all non-binary, non-backup files:
 
 ```javascript
-// Real email addresses — anything except [YOUR_DOMAIN] placeholder
-/\b[A-Za-z0-9._%+-]+@(?!YOUR_DOMAIN)[a-z0-9.-]+\.(org|com|net)\b/g
+// Real email addresses — all DNS-style domains; only canonical placeholders
+// and the scanner's explicit example/operational allowlist are exempt.
+/\b[A-Z0-9._%+-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,63}\b/gi
 
 // Phone number patterns
 /\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
 ```
 
-**Exclusion:** Lines containing a `[PLACEHOLDER]` marker (text inside square brackets)
-are skipped. This allows examples like `[user@YOUR_DOMAIN.COM]` to appear safely.
+**No line-level exclusion:** arbitrary bracketed text never exempts a line. The
+scanner masks only the exact canonical `[USER@DOMAIN.COM]` and `[PHONE_NUMBER]`
+tokens before checking the corresponding data class.
 
 ### Credential Patterns (BLOCK)
 
@@ -76,27 +85,53 @@ Applied to all non-binary files:
 
 ### Dangerous Cmdlet Patterns (WARN)
 
-Applied to `.ps1` and `.md` files, excluding documentation files
-(CLAUDE.md, lessons.md, README.md — these legitimately list dangerous cmdlets as reference).
+Applied to `.ps1` and `.md` files. The narrow reference surfaces `CLAUDE.md`,
+`README.md`, and lessons files are excluded from warning matching only; they are
+still scanned for blocking data. Operational command documentation remains in
+scope and is also checked by the structural state-change inventory tests.
 
 Full list of flagged patterns:
 
 | Pattern | Risk |
 |---------|------|
 | `Remove-Item -Recurse -Force` | Mass file/directory deletion |
+| `Remove-Item ... -Force` | Forced file deletion |
 | `Remove-Mg*` | Graph API deletion (users, groups, devices) |
 | `Remove-Mailbox` | Permanent mailbox deletion |
-| `Format-*` | Disk format risk |
+| `Remove-MailboxPermission` | Mailbox access revocation (not mailbox deletion) |
+| `Clear-MgDeviceManagementManagedDevice` / `Invoke-MgRetireDeviceManagementManagedDevice` | Managed-device wipe / retire |
+| `Delete-QuarantineMessage` / `Release-QuarantineMessage` | Quarantine deletion / recipient-scoped or broad release |
+| `Remove-BlockedSenderAddress` | Re-enables a restricted sender |
+| `Remove-ADGroupMember` / `Remove-PnPGroupMember` | AD / SharePoint access revocation |
+| `Update-MgUser ... -AccountEnabled:$false` / `-PasswordProfile` | Cloud sign-in block / cloud password reset |
+| `Set-ADAccountPassword ... -Reset` | On-premises password reset |
+| `Invoke-MgInvalidateUserRefreshToken` | Refresh-token invalidation |
+| `Set-MgUserLicense` | License assignment change |
+| `New-ADUser` / `New-Mailbox` / `New-DistributionGroup` | Identity, mailbox, or distribution-group creation |
+| `Add-MailboxPermission` / `Add-RecipientPermission` / `New-MgGroupMember` | Permission or membership grant |
+| `Start-ADSyncSyncCycle` | Directory synchronization trigger |
+| `New/Update-MgIdentityConditionalAccessPolicy` | Conditional Access policy mutation |
+| `Set-SPOSite` / `Grant-CsTeams*Policy` | SharePoint setting or Teams policy mutation |
+| `New-MgDeviceManagementDeviceCompliancePolicyAssignment` | Compliance-policy assignment |
+| `Set-Mailbox ... -Type Shared` | Mailbox conversion |
+| `Install-Module` | PowerShell module installation (SR-2) |
+| `Format-Volume` / `Format-Drive` | Destructive storage format; output-only `Format-Table` and `Format-List` are not flagged |
 | `Clear-Mailbox` | Wipes mailbox contents |
 | `Clear-MobileDevice` | Remote device wipe |
 | `Disable-Mg*` / `Disable-ADAccount` | Account/object disable |
-| `Revoke-Mg*` / `Revoke-*` | Session/token revocation |
+| Provider cmdlets beginning `Revoke-Mg`, `Revoke-AzureAD`, `Revoke-SPO`, `Revoke-PnP`, or `Revoke-Cs` | Session/token revocation; arbitrary `Revoke-*` prose is not flagged |
 | `BlockCredential $true` | Blocks user sign-in |
 | `Invoke-Expression` / `IEX` | Arbitrary code execution |
 | `Start-Process -FilePath` | Arbitrary process launch |
 | `ConvertTo-SecureString -AsPlainText -Force` | Plaintext credential in script |
 | `git push --force` / `git push -f` | Can overwrite remote history |
 | `git reset --hard` | Destroys uncommitted work |
+| `git commit --no-verify` | Bypasses the pre-commit safety gate |
+| `jira-client.js ... --execute` | External Jira API boundary |
+| `init-memory.js ... --execute` / `security-audit.js ... --write` | Local filesystem mutation |
+| `scp` / `sftp` | Local or remote file transfer |
+| Writes or mode changes under `.git/hooks/` | Repository-local executable change |
+| Dynamic `$ssh ... $remoteCommand` invocation | Remote command boundary |
 
 ---
 
@@ -119,7 +154,7 @@ pre-commit-check: ✓ Clean — no issues found.
 
 🔴 COMMIT BLOCKED — 1 critical issue(s) found.
    Fix the issues above, then re-stage and commit.
-   To bypass (only if you are certain): git commit --no-verify
+   Do not bypass the hook. Fix the finding, re-stage, and run the scanner again.
 ```
 
 ### Warning (commit proceeds)
@@ -169,21 +204,9 @@ const DANGEROUS_PS_PATTERNS = [
 ];
 ```
 
-### Adding a File Extension to Skip
+### Coverage reductions are security-control changes
 
-In the `checkFile` function, add to the extension exclusion list:
-
-```javascript
-if (!['.zip', '.png', '.jpg', '.pdf', '.exe', '.your-extension'].includes(ext) && !isBakFile) {
-```
-
-### Adding a Documentation File to Exclude from Cmdlet Scan
-
-In the `isDocFile` regex on line 82:
-
-```javascript
-const isDocFile = /CLAUDE\.md$|CLAUDE\.md\.\w+$|lessons.*\.md$|README\.md$|YOUR_FILE\.md$/i.test(filePath);
-```
+Do not add file extensions or documentation paths to an exclusion as the normal response to a warning. First narrow an over-broad matcher by semantics and add a regression fixture proving that the real dangerous form still warns. A truly required coverage reduction needs an explicit operator decision naming the exact path/type and the blind spot it creates; it must ship with a deterministic test for the remaining coverage.
 
 ---
 
@@ -193,12 +216,11 @@ const isDocFile = /CLAUDE\.md$|CLAUDE\.md\.\w+$|lessons.*\.md$|README\.md$|YOUR_
 # Run against all currently staged files
 node scripts/pre-commit-check.js
 
-# Test a specific scenario — stage a file with a known pattern
-echo '$password = "abc"' > /tmp/test.ps1
-git add /tmp/test.ps1
-node scripts/pre-commit-check.js
-# Should output: BLOCK — Hardcoded credential variable
-git reset HEAD /tmp/test.ps1
+# Run the deterministic in-memory scanner fixtures; they do not stage or leave a credential-shaped file
+node --test scripts/pre-commit-check.test.js
+
+# Scan tracked plus non-ignored untracked working-tree files (CI/release gate)
+node scripts/pre-commit-check.js --all
 ```
 
 ---
@@ -209,7 +231,7 @@ The scanner occasionally flags legitimate content. Common cases:
 
 | False positive | Cause | Resolution |
 |---------------|-------|-----------|
-| Example password in docs | Credential pattern in a code block | Wrap in a `[PLACEHOLDER]` marker or use `--no-verify` with comment |
-| External email in vendor template | PII pattern | Replace with `[vendor@VENDOR_DOMAIN.COM]` |
-| `Revoke-*` in an IR playbook | Dangerous cmdlet in a .md file | Add file to `isDocFile` exclusion regex |
-| API token format in docs | Credential pattern | Use `[API_TOKEN_PLACEHOLDER]` format |
+| Example password in docs | Credential pattern in a code block | Replace it with the canonical `[TEMP_PASSWORD]` placeholder and rerun the scanner |
+| External email in vendor template | PII pattern | Replace it with `[USER@DOMAIN.COM]` |
+| An actual provider `Revoke-*` cmdlet in an IR playbook | Session/token mutation in a `.md` file | Keep the warning and add the required command-local gate; do not exclude the file |
+| API token format in docs | Credential pattern | Use the canonical credential placeholder from `shared/security/placeholder-dict.md` |

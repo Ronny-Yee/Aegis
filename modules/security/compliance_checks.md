@@ -3,6 +3,10 @@
 Automated and manual checks for M365 tenant security posture. Run these monthly or
 after any significant identity or policy change.
 
+## Execution boundary
+
+This module is read-only assessment and planning guidance. It does not authorize guest removal, role removal, license change, Conditional Access change, sharing-policy change, or any report file write. Route a reviewed action to the applicable operator-only command (for example `/group-membership-audit`, `/license-audit`, `/conditional-access`, or `/sharepoint-access`) and require that destination's action-local gate. A `PREVIEW ONLY` line below must remain non-executing.
+
 ---
 
 ## Check 1 — MFA Coverage
@@ -62,6 +66,7 @@ Write-Host "Users without MFA: $($noMFA.Count)"
 1. Entra → Identity → Users → All users
 2. Filter: `User type = Guest`
 3. Review: Last sign-in date, invited by, what groups/apps they belong to
+> **PREVIEW ONLY [compliance-stale-guest-removal]:** Identify and document candidates only. Guest deletion requires a separately reviewed identity-removal runbook and exact target set.
 4. Remove guests with no sign-in in 90+ days or unknown invite source
 
 ### PowerShell — Export Guest List
@@ -75,13 +80,13 @@ Connect-MgGraph -Scopes "User.Read.All", "AuditLog.Read.All"
 $guests = Get-MgUser -All -Filter "userType eq 'Guest'" `
   -Property DisplayName,UserPrincipalName,CreatedDateTime,SignInActivity
 
-$guests | Select-Object DisplayName, UserPrincipalName, CreatedDateTime,
-    @{N='LastSignIn'; E={ $_.SignInActivity.LastSignInDateTime }} |
-    Export-Csv -Path "guest-audit-$(Get-Date -f yyyyMMdd).csv" -NoTypeInformation
+# PREVIEW ONLY [compliance-guest-report-write]: $guests | Select-Object DisplayName, UserPrincipalName, CreatedDateTime,
+#     @{N='LastSignIn'; E={ $_.SignInActivity.LastSignInDateTime }} |
+#     Export-Csv -Path "$env:LOCALAPPDATA\Aegis\reports\guest-audit-$(Get-Date -f yyyyMMdd).csv" -NoTypeInformation
 
-Write-Host "Guest count: $($guests.Count). Exported to CSV."
+Write-Host "Guest count: $($guests.Count). No CSV was written by this preview."
 ```
-*Exports guest list with last sign-in. Review for stale accounts (no sign-in in 90 days).*
+*Displays the guest count. The commented preview shows how a separately authorized local export could be prepared for stale-account review.*
 </details>
 
 **Pass criteria:** No guest accounts older than 90 days without a business justification on file.
@@ -133,6 +138,7 @@ Write-Host "Blocked accounts with licenses: $($blockedLicensed.Count)"
 2. Review: Global Administrator, Privileged Role Administrator, Exchange Administrator,
    Intune Administrator, Security Administrator
 3. For each: verify each member has a documented business reason
+> **PREVIEW ONLY [compliance-admin-role-removal]:** Record the role-assignment IDs and business owner. Removal requires a separately reviewed permission-revocation action with count-bound confirmation.
 4. Remove any service/shared accounts or former employee accounts
 
 ### PowerShell — Export All Role Assignments

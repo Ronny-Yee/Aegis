@@ -1,8 +1,11 @@
 ---
 description: Troubleshoot Entra Connect (AD Connect) sync — check sync status, user not appearing in M365, force delta or full sync, common errors, password hash sync, and server health. GUI first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /ad-connect
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** AD Connect is the source of authority for synced users — if a user isn't appearing in M365 or attributes are wrong, check the Entra admin center sync status first, then look at the Synchronization Service Manager on the AD Connect server for the specific error before touching anything.
 
@@ -36,6 +39,8 @@ Most likely causes (check in order):
 4. **Attribute conflict** — if a cloud-only user with the same UPN or ProxyAddress already exists in M365, the sync will silently fail for that object
 
 **Fix for OU scoping:**
+
+> **PREVIEW ONLY [ad-connect-ou-scope]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 - Open **Azure AD Connect wizard** on the AD Connect server → **Customize synchronization options** → **Domain/OU Filtering** → check that the new user's OU is ticked → save → run a delta sync
 
 **Fix for UPN mismatch:**
@@ -56,6 +61,8 @@ Log onto the AD Connect server → open **Synchronization Service Manager** (`St
 
 **4. Force a manual delta sync (run this for urgent user additions)**
 
+> **PREVIEW ONLY [ad-connect-delta-portal]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 `Start → Windows PowerShell (as Administrator)` on the AD Connect server:
 
 <details>
@@ -65,8 +72,8 @@ Log onto the AD Connect server → open **Synchronization Service Manager** (`St
 # Import the ADSync module so the cmdlets are available in this session
 Import-Module ADSync  # loads the AD Connect PowerShell module installed on the sync server
 
-# Run a delta sync — only processes objects changed since the last sync (fast, ~1-5 min)
-Start-ADSyncSyncCycle -PolicyType Delta  # use this for 99% of cases: new users, attribute changes, group updates
+# PREVIEW ONLY [ad-connect-delta] — non-executing sync reference; move it to a reviewed runbook with connector scope, checkpoint, and exact confirmation.
+# Start-ADSyncSyncCycle -PolicyType Delta
 
 # Check the current sync scheduler settings (shows last run time and next scheduled run)
 Get-ADSyncScheduler  # output shows: SyncCycleEnabled, NextSyncCyclePolicyType, LastSyncTime
@@ -79,6 +86,8 @@ Allow 2-5 minutes for the delta sync to complete. Then check Entra admin center 
 ---
 
 **5. Force a full / initial sync (use sparingly)**
+
+> **PREVIEW ONLY [ad-connect-initial-portal]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 A full sync re-evaluates ALL objects in scope — it is slow (can take 30-60+ min on large directories) and should only be used when:
 - The AD Connect configuration has changed (new OU added to scope, connector reconfigured)
@@ -93,8 +102,8 @@ A full sync re-evaluates ALL objects in scope — it is slow (can take 30-60+ mi
 ```powershell
 Import-Module ADSync  # load the AD Connect module
 
-# Run a full initial sync — processes EVERY object in the sync scope (slow; use only when needed)
-Start-ADSyncSyncCycle -PolicyType Initial  # re-evaluates all users, groups, contacts in scope; expect 30-60+ min on large directories
+# PREVIEW ONLY [ad-connect-initial] — non-executing full-sync reference; it can reevaluate every object in connector scope.
+# Start-ADSyncSyncCycle -PolicyType Initial
 ```
 
 </details>
@@ -103,17 +112,21 @@ Start-ADSyncSyncCycle -PolicyType Initial  # re-evaluates all users, groups, con
 
 **6. Common sync errors and fixes**
 
+> **PREVIEW ONLY [ad-connect-object-remediation]:** The table diagnoses likely causes only. Alias removal, hard-match/ImmutableID changes, cloud-object deletion, attribute edits, and UPN changes are independent identity mutations; none is authorized here. Resolve the exact source/target object and route each one through a separate reviewed runbook with pre-state, rollback, and its own confirmation.
+
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `AttributeValueMustBeUnique` — duplicate `proxyAddresses` | Two AD objects have the same email alias | Find and remove the duplicate alias from one object in ADUC → Attribute Editor |
-| `InvalidSoftMatch` / `ObjectTypeMismatch` | Cloud-only user and synced user have the same UPN | Hard-match using `ImmutableID`; or delete the cloud-only user if it was a placeholder |
-| `Export-AttributeFlow-Precondition-Error` | Required M365 attribute missing (often UPN or `mail` attribute) | Populate the missing attribute in ADUC |
+| `AttributeValueMustBeUnique` — duplicate `proxyAddresses` | Two AD objects have the same email alias | Identify both source objects and prepare a separately reviewed alias correction; do not remove an alias from this diagnostic table |
+| `InvalidSoftMatch` / `ObjectTypeMismatch` | Cloud-only user and synced user have the same UPN | Compare immutable IDs and object ownership; hard-match and cloud-object deletion are distinct high-risk actions that require separate workflows |
+| `Export-AttributeFlow-Precondition-Error` | Required M365 attribute missing (often UPN or `mail` attribute) | Identify the authoritative source and prepare a separately reviewed attribute correction |
 | `stopped-server-down` | AD Connect can't reach on-prem AD or M365 endpoints | Check AD Connect server network; confirm outbound HTTPS to `*.microsoftonline.com` is not blocked |
-| `DataValidationFailed` — UPN not in a verified domain | User's UPN uses an unverified domain suffix | Change UPN in ADUC to `@[@Aegion_DOMAIN]` (the verified domain) |
+| `DataValidationFailed` — UPN not in a verified domain | User's UPN uses an unverified domain suffix | Verify the approved tenant domain from environment/config and prepare a separately reviewed authoritative UPN change; do not use the public decoy token operationally |
 
 ---
 
 **7. Password hash sync issues**
+
+> **PREVIEW ONLY [ad-connect-password-hash-portal]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 If users can't sign in to M365 with their AD password despite sync being healthy:
 
@@ -126,8 +139,8 @@ If users can't sign in to M365 with their AD password despite sync being healthy
 ```powershell
 Import-Module ADSync  # load the AD Connect module
 
-# Force an immediate password hash sync for all users (safe, non-destructive)
-Invoke-ADSyncCSObjectPasswordHashSync -ConnectorName "[@Aegion_DOMAIN]"  # replace the connector name with your on-prem AD connector name as shown in Synchronization Service Manager
+# PREVIEW ONLY [ad-connect-password-hash] — non-executing credential-sync reference; bind the reviewed connector and exact scope in a separate runbook.
+# Invoke-ADSyncCSObjectPasswordHashSync -ConnectorName "[@Aegion_DOMAIN]"
 
 # Alternatively — check the Password Hash Sync status
 Get-ADSyncAADPasswordSyncConfiguration -SourceConnector "[@Aegion_DOMAIN]"  # shows whether PHS is enabled on the connector
@@ -156,6 +169,8 @@ Check these directly on the AD Connect server:
 ---
 
 **9. Checking sync scope (which OUs are included)**
+
+> **PREVIEW ONLY [ad-connect-scope-review]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 If you suspect a new OU is missing from sync:
 - On the AD Connect server: open the **Azure AD Connect** wizard → **Configure** → **Customize synchronization options** → **Domain/OU Filtering**

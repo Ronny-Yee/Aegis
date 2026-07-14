@@ -1,8 +1,11 @@
 ---
 description: PowerShell error decoder — anatomy of red-text errors, common errors with plain-English fixes, and how to extract full error details. Reference doc, not a portal procedure.
+disable-model-invocation: true
 ---
 
 # /ps-error-decode
+
+> **Execution boundary:** This decoder is read-only reference material. It explains errors but does not authorize module installation, privilege/role assignment, account restoration/deletion, or any other remediation. Route a proposed state change to its canonical reviewed command with a resolved target and action-specific exact confirmation.
 
 **Verdict:** PowerShell errors follow a consistent structure — exception type → message → script line → position. Read the error top-to-bottom: the first line tells you *what* failed, the second tells you *where*, and "CategoryInfo" tells you *why*. Most IT errors fall into six patterns: missing module, wrong permissions, bad data type (or a placeholder not replaced), network block, auth token expired, or a cascading failure from a previous error.
 
@@ -31,15 +34,15 @@ char:<position>                                    ← Column in that line
 
 | Error message | What it means | Fix |
 |---------------|---------------|-----|
-| `The term 'Get-MgUser' is not recognized as the name of a cmdlet` | The Microsoft Graph module is not installed or not imported in this session | Run `Install-Module Microsoft.Graph -Scope CurrentUser` (once per machine), then `Import-Module Microsoft.Graph` (each session). Same pattern for `ExchangeOnlineManagement` or any other module. |
+| `The term 'Get-MgUser' is not recognized as the name of a cmdlet` | The Microsoft Graph module is not installed or not imported in this session | First check `Get-Module -ListAvailable Microsoft.Graph`. If absent, stop and route the proposed CurrentUser install to a separately gated module-install runbook; this decoder cannot install it. `Import-Module Microsoft.Graph` is the non-install session step. |
 | `Access is denied` | Your account doesn't have permission, OR the PowerShell session wasn't started as Administrator | If it's a local operation: right-click PowerShell → Run as Administrator. If it's a cloud operation: your admin account is missing a required Entra role — check **Entra → Roles and administrators**. |
 | `Cannot bind argument to parameter 'UserId' because it is null` | A variable or parameter is empty — most often a `[PLACEHOLDER]` that was never replaced with a real value | Search your script for `[PLACEHOLDER]` text or any variable that equals `$null`. Replace it with the actual value before running. |
 | `Cannot bind parameter 'X'. Cannot convert value "Y" to type "Z"` | Wrong data type passed — e.g., passing a plain string where an object is expected | Check the cmdlet's `-X` parameter docs. You may need to wrap the value (e.g., `[GUID]"..."` or use a `Get-*` call to retrieve the object first). |
 | `AADSTS700016: Application not found` / `Unauthorized` / `AuthorizationRequestDenied` | Your auth token expired or you connected with the wrong permission scopes | Re-run the connect command: `Connect-MgGraph -Scopes "User.ReadWrite.All","Directory.ReadWrite.All"` (adjust scopes for your task). For Exchange: `Connect-ExchangeOnline -UserPrincipalName [UPN]`. |
 | `Connect-MgGraph: The remote server returned an error: (400) Bad Request` | Wrong or unsupported `-Scopes` value, or tenant conditional access is blocking the sign-in | Verify the exact scope names at [Microsoft Graph permissions reference]. Confirm no Conditional Access policy blocks this admin account from signing in. |
 | `The pipeline has been stopped` | A previous cmdlet in a pipeline threw an error and PowerShell aborted the whole pipeline | Read the error that appeared *before* this one — that's the root cause. Fix that error first; this one will disappear. |
-| `Insufficient privileges to complete the operation` | The Graph or Exchange cmdlet needs a higher admin role than your account currently has | In Entra admin center → Roles and administrators → assign the required role (e.g., User Administrator, Exchange Administrator) to your account. Re-authenticate after the role is assigned. |
-| `New-MgUser: A conflicting object with one or more of the specified property values is present` | A user with that UPN or email already exists in the directory | Check with `Get-MgUser -UserId [UPN]` before creating. If the account exists as a soft-deleted object, restore or permanently delete it first. |
+| `Insufficient privileges to complete the operation` | The Graph or Exchange cmdlet needs a role your account does not currently have | Inspect the required role in Entra → Roles and administrators. Do not assign it from this decoder; route any least-privilege, time-bounded role request through a separately reviewed access workflow, then re-authenticate only after approval and assignment. |
+| `New-MgUser: A conflicting object with one or more of the specified property values is present` | A user with that UPN or email already exists in the directory | Check the active and deleted-item inventories first. Restoration and permanent deletion have different effects and each requires a separate canonical, target-bound workflow; neither is authorized by this decoder. |
 | `Get-ADUser: Unable to find a default server` | The script is running on a machine that can't reach the on-prem Active Directory domain controller | Run the script from the AD Connect server or a domain-joined machine. Or specify the DC explicitly: `Get-ADUser -Server "[DC_FQDN]" ...` |
 | `VERBOSE: Connecting ... OperationStopped: Connection timed out` | Network or firewall is blocking the connection to the target service | Check internet connectivity first (`Test-NetConnection -ComputerName "graph.microsoft.com" -Port 443`). If blocked, check the Meraki MX firewall outbound rules — port 443 (HTTPS) must be open. |
 

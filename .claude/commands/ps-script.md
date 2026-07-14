@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 IMPORTANT: Do NOT ask for employee details, names, emails, departments, or any identifying info. Deliver the FULL procedure IMMEDIATELY using only placeholders like [FIRST_NAME], [UPN], [DEVICE_NAME], [DEPARTMENT]. The user will substitute real values themselves.
 
-Write or explain a PowerShell script for [YOUR_ORG] IT. Tenant: [YOUR_DOMAIN] | Stack: M365, Entra ID, Intune, Exchange, on-prem AD. Always explain every line in plain English. Use placeholders — never real employee data.
+Write or explain a PowerShell script for [@Aegion] IT. Tenant: [@Aegion_DOMAIN] | Stack: M365, Entra ID, Intune, Exchange, on-prem AD. Always explain every line in plain English. Use placeholders — never real employee data.
 
 ---
 
@@ -42,14 +42,14 @@ Write or explain a PowerShell script for [YOUR_ORG] IT. Tenant: [YOUR_DOMAIN] | 
 
 ---
 
-**Common modules used at [YOUR_ORG]:**
+**Common modules used at [@Aegion]:**
 
 ```powershell
 # Connect to Microsoft Graph (M365/Entra)
 Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All"
 
 # Connect to Exchange Online
-Connect-ExchangeOnline -UserPrincipalName "[admin@YOUR_DOMAIN]"
+Connect-ExchangeOnline -UserPrincipalName "[USER@DOMAIN.COM]"
 
 # Active Directory (run on domain-joined machine)
 Import-Module ActiveDirectory

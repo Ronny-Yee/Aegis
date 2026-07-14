@@ -13,7 +13,8 @@
  * Called automatically by .git/hooks/pre-commit
  * Can also run manually: node scripts/pre-commit-check.js
  * Full-tree mode (CI release gate): node scripts/pre-commit-check.js --all
- *   — scans every tracked file in the working tree instead of the staged set
+ *   — scans every tracked and non-ignored untracked file in the working tree
+ *     instead of the staged set
  *
  * Exit 0 = clean or warnings only
  * Exit 1 = blocking findings detected
@@ -40,19 +41,54 @@ class ScannerError extends Error {
 // ── Dangerous PowerShell patterns ────────────────────────────────────────────
 const DANGEROUS_PS_PATTERNS = [
   { pattern: /Remove-Item\s+.*-Recurse\s+.*-Force|Remove-Item\s+.*-Force\s+.*-Recurse/i, label: 'Remove-Item -Recurse -Force — mass file deletion' },
+  { pattern: /Remove-Item\b(?![^\r\n]*-Recurse)(?=[^\r\n]*-Force)/i, label: 'Remove-Item -Force — forced file deletion' },
   { pattern: /Remove-Mg\w+/i,                  label: 'Remove-Mg* — Graph API deletion cmdlet' },
-  { pattern: /Remove-Mailbox/i,                 label: 'Remove-Mailbox — permanent mailbox deletion' },
-  { pattern: /Format-\w+/i,                     label: 'Format-* — potential disk format' },
+  { pattern: /\bRemove-MailboxPermission\b/i,   label: 'Remove-MailboxPermission — mailbox permission revocation' },
+  { pattern: /\bRemove-Mailbox\b/i,             label: 'Remove-Mailbox — permanent mailbox deletion' },
+  { pattern: /\bClear-MgDeviceManagementManagedDevice\b/i, label: 'Clear-MgDeviceManagementManagedDevice — managed-device factory reset' },
+  { pattern: /\bInvoke-MgRetireDeviceManagementManagedDevice\b/i, label: 'Invoke-MgRetireDeviceManagementManagedDevice — managed-device retire' },
+  { pattern: /\bDelete-QuarantineMessage\b/i,   label: 'Delete-QuarantineMessage — quarantine message deletion' },
+  { pattern: /\bRelease-QuarantineMessage\b[^\r\n]*-ReleaseToAll\b/i, label: 'Release-QuarantineMessage -ReleaseToAll — quarantine release to all recipients' },
+  { pattern: /\bRelease-QuarantineMessage\b(?![^\r\n]*-ReleaseToAll\b)/i, label: 'Release-QuarantineMessage — recipient-scoped quarantine release' },
+  { pattern: /\bRemove-BlockedSenderAddress\b/i, label: 'Remove-BlockedSenderAddress — restricted sender re-enable' },
+  { pattern: /\bRemove-ADGroupMember\b/i,       label: 'Remove-ADGroupMember — AD group access revocation' },
+  { pattern: /\bRemove-PnPGroupMember\b/i,      label: 'Remove-PnPGroupMember — SharePoint access revocation' },
+  { pattern: /\bUpdate-MgUser\b[^\r\n]*-AccountEnabled\s*:\s*\$false/i, label: 'Update-MgUser AccountEnabled false — cloud sign-in block' },
+  { pattern: /\bUpdate-MgUser\b[^\r\n]*-PasswordProfile\b/i, label: 'Update-MgUser -PasswordProfile — cloud password reset' },
+  { pattern: /\bSet-ADAccountPassword\b[^\r\n]*-Reset\b/i, label: 'Set-ADAccountPassword -Reset — on-premises password reset' },
+  { pattern: /\bInvoke-MgInvalidateUserRefreshToken\b/i, label: 'Invoke-MgInvalidateUserRefreshToken — refresh-token invalidation' },
+  { pattern: /\bSet-MgUserLicense\b/i,          label: 'Set-MgUserLicense — license assignment change' },
+  { pattern: /\bNew-ADUser\b/i,                 label: 'New-ADUser — directory account creation' },
+  { pattern: /\bNew-Mailbox\b/i,                label: 'New-Mailbox — mailbox creation' },
+  { pattern: /\bNew-DistributionGroup\b/i,      label: 'New-DistributionGroup — distribution group creation' },
+  { pattern: /\bAdd-MailboxPermission\b/i,      label: 'Add-MailboxPermission — mailbox permission grant' },
+  { pattern: /\bAdd-RecipientPermission\b/i,    label: 'Add-RecipientPermission — Send As permission grant' },
+  { pattern: /\bNew-MgGroupMember\b/i,          label: 'New-MgGroupMember — group membership grant' },
+  { pattern: /\bStart-ADSyncSyncCycle\b/i,      label: 'Start-ADSyncSyncCycle — directory synchronization trigger' },
+  { pattern: /\b(?:New|Update)-MgIdentityConditionalAccessPolicy\b/i, label: 'Conditional Access policy mutation' },
+  { pattern: /\bSet-SPOSite\b/i,                label: 'Set-SPOSite — SharePoint site mutation' },
+  { pattern: /\bGrant-CsTeams\w*Policy\b/i,    label: 'Grant-CsTeams*Policy — Teams policy assignment' },
+  { pattern: /\bNew-MgDeviceManagementDeviceCompliancePolicyAssignment\b/i, label: 'New-MgDeviceManagementDeviceCompliancePolicyAssignment — compliance policy assignment' },
+  { pattern: /\bSet-Mailbox\b[^\r\n]*-Type\s+Shared\b/i, label: 'Set-Mailbox -Type Shared — mailbox conversion' },
+  { pattern: /\bInstall-Module\b/i,             label: 'Install-Module — PowerShell module installation' },
+  { pattern: /\bFormat-(?:Volume|Drive)\b/i,    label: 'Format-Volume/Drive — destructive storage format' },
   { pattern: /Clear-Mailbox/i,                  label: 'Clear-Mailbox — wipes mailbox contents' },
   { pattern: /Clear-MobileDevice/i,             label: 'Clear-MobileDevice — remote device wipe' },
   { pattern: /Disable-Mg\w+|Disable-ADAccount/i,label: 'Disable-* — account/object disable' },
-  { pattern: /Revoke-Mg\w+|Revoke-\w+/i,        label: 'Revoke-* — session/token revocation' },
+  { pattern: /\bRevoke-(?:Mg|AzureAD|SPO|PnP|Cs)[A-Za-z0-9]+\b/i, label: 'Revoke-* session/token cmdlet — session or token revocation' },
   { pattern: /BlockCredential\s*\$true/i,        label: 'BlockCredential $true — blocks user sign-in' },
   { pattern: /Invoke-Expression|[^a-z]IEX[^a-z]/i, label: 'Invoke-Expression / IEX — arbitrary code execution' },
   { pattern: /Start-Process\s+.*-FilePath/i,    label: 'Start-Process -FilePath — arbitrary process launch' },
   { pattern: /ConvertTo-SecureString.*-AsPlainText.*-Force/i, label: 'ConvertTo-SecureString -AsPlainText — plaintext credential in script' },
   { pattern: /git\s+push\s+.*--force|git\s+push\s+-f\b/i, label: 'git push --force — can overwrite remote history' },
   { pattern: /git\s+reset\s+--hard/i,           label: 'git reset --hard — destroys uncommitted work' },
+  { pattern: /git\s+commit\b[^\r\n]*--no-verify\b/i, label: 'git commit --no-verify — pre-commit gate bypass' },
+  { pattern: /\bnode\s+scripts[\\/]jira-client\.js\b[^\r\n]*\s--execute\b/i, label: 'jira-client --execute — external Jira mutation/read boundary' },
+  { pattern: /\bnode\s+scripts[\\/]init-memory\.js\b[^\r\n]*\s--execute\b/i, label: 'init-memory --execute — local memory filesystem mutation' },
+  { pattern: /\bnode\s+scripts[\\/]security-audit\.js\b[^\r\n]*\s--write\b/i, label: 'security-audit --write — local report creation' },
+  { pattern: /\b(?:scp|sftp)\b/i,               label: 'scp/sftp — local or remote file transfer' },
+  { pattern: /(?:\b(?:chmod|cp|install|mv|tee)\b|\bCopy-Item\b|\bSet-Content\b|>)[^\r\n]*\.git[\\/]hooks[\\/]/i, label: 'Git hook installation — repository-local executable change' },
+  { pattern: /(?:^|[;|&]\s*)&?\s*\$ssh\b[^\r\n]*\$remoteCommand\b/i, label: 'Dynamic SSH remote command invocation' },
 ];
 
 // ── PII patterns ──────────────────────────────────────────────────────────────
@@ -157,11 +193,13 @@ function getStagedContent(filePath, displayPath) {
   );
 }
 
-// --all mode (CI release gate): every tracked file, read from the working tree
-function getAllTrackedFiles() {
+// --all mode (CI release gate): every tracked and non-ignored untracked file,
+// read from the working tree. This includes a newly created repair file before
+// it is staged, so a reviewable local diff receives the same scan as a commit.
+function getAllWorkingTreeFiles() {
   return parseNulList(runGit(
-    ['ls-files', '-z', '--'],
-    'unable to enumerate tracked files.',
+    ['ls-files', '-co', '--exclude-standard', '-z', '--'],
+    'unable to enumerate working-tree files.',
   ));
 }
 
@@ -270,8 +308,9 @@ function checkFile(filePath, content, tenantLiterals) {
   }
   const lines = text.split('\n');
 
-  // PowerShell safety scan — .ps1 files and .md files (generated PS in markdown)
-  // Exclude pure documentation files that list dangerous cmdlets as reference material
+  // Operational safety scan — .ps1 files and .md files (generated commands in
+  // markdown). Pure reference surfaces are excluded; executable command docs
+  // remain covered and require the separate structural gate tests.
   const isDocFile = /CLAUDE\.md$|CLAUDE\.md\.\w+$|lessons.*\.md$|README\.md$/i.test(filePath);
   if ((ext === '.ps1' || ext === '.md') && !isDocFile) {
     lines.forEach((line, i) => {
@@ -360,15 +399,15 @@ function main(args) {
 
   const scanAll = args[0] === '--all';
   const tenantLiterals = loadTenantLiterals();
-  const files = scanAll ? getAllTrackedFiles() : getStagedFiles();
+  const files = scanAll ? getAllWorkingTreeFiles() : getStagedFiles();
 
   if (files.length === 0) {
-    console.log(scanAll ? 'pre-commit-check: No tracked files found. Skipping.' : 'pre-commit-check: No staged files. Skipping.');
+    console.log(scanAll ? 'pre-commit-check: No tracked or non-ignored files found. Skipping.' : 'pre-commit-check: No staged files. Skipping.');
     return EXIT_OK;
   }
 
   if (scanAll) {
-    console.log(`pre-commit-check: --all mode — scanning ${files.length} tracked files.`);
+    console.log(`pre-commit-check: --all mode — scanning ${files.length} tracked and non-ignored files.`);
   }
 
   if (tenantLiterals.length === 0) {

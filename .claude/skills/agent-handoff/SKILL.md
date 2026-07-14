@@ -1,9 +1,12 @@
 ---
 name: agent-handoff
 description: SOP for ingesting a staged handoff from another agent (e.g. Aegis D Hermes → Aegis) — reachability gate, manifest read, read-only pull, sanitization gate, branch ingest, integrate, verify, report.
+disable-model-invocation: true
 ---
 
 # Skill: agent-handoff
+
+> **Execution boundary:** This public skill is planning/reference material. Read-only reachability and inspection commands may be used when separately authorized, but every download, local file write, remote fetch, branch creation, copy, stage, and commit example below is inert. Resolve the source/destination, inspect the shared working tree, and obtain action-local authorization in a private runbook before uncommenting any one mutation. This skill never authorizes a push or a write to the peer.
 
 **Trigger:** `/agent-handoff` or "ingest the Hermes handoff" or "pull the staged bundle" or any time another agent in the stack stages files for Aegis to absorb.
 
@@ -26,38 +29,40 @@ description: SOP for ingesting a staged handoff from another agent (e.g. Aegis D
 ## Steps
 
 ### 1. Reachability gate
-```
+```bash
 ssh -o ConnectTimeout=10 [PEER_SSH_USER]@[PEER_HOST] 'whoami'
 ```
 - Pass → continue. Fail with auth error → print Aegis's **public** key, give the operator the exact `authorized_keys` append command for the peer console, STOP and wait for "key added", retry once.
 
 ### 2. Read the manifest first
-```
-ssh [PEER_SSH_USER]@[PEER_HOST] 'cat [PEER_STAGING_DIR]/MANIFEST.md'  > local staging/MANIFEST.md
+```bash
+# PREVIEW ONLY [handoff-manifest-download]: ssh [PEER_SSH_USER]@[PEER_HOST] 'cat [PEER_STAGING_DIR]/MANIFEST.md' > ./local-staging/MANIFEST.md
 ```
 Confirm the expected file count + the `sanitized/` subset exist before pulling.
 
 ### 3. Read-only pull
 - Prefer `rsync -av`; if rsync absent (Windows laptop), use `scp -r` (functionally equivalent for a one-way copy):
-```
-scp -r [PEER_SSH_USER]@[PEER_HOST]:[PEER_STAGING_DIR]/  ./local-staging/
+```bash
+# PREVIEW ONLY [handoff-bundle-download]: scp -r [PEER_SSH_USER]@[PEER_HOST]:[PEER_STAGING_DIR]/ ./local-staging/
 ```
 - Confirm the file count matches the manifest.
 
 ### 4. Sanitization gate (run on the sanitized subset)
 Must be **0 hits**. Fill the bracketed terms from your peer's real internals + the canonical secret-prefix ruleset in your **private** security config — never commit the literal forbidden values into a sanitized repo:
-```
+```bash
 grep -nE '<peer_home>/\.<agent>/|/opt/<agent>|<PEER_IP>|<peer_user>@<peer>|<peer_hostname>|<llm_key_prefixes>|<vcs_token_prefixes>' sanitized/*
 ```
 - 0 hits → proceed. Any hit → log `file:line:pattern` to ABORT.log, skip ingest of the offending file, continue with the rest.
 
 ### 5. Branch + ingest
-```
-git fetch origin
-git checkout -b feat/<name>-<date>
-mkdir -p docs/handoff/<date>/
-# copy sanitized files + MANIFEST.md into docs/handoff/<date>/
-git add docs/handoff/<date>/ && git commit -m "feat: ingest <peer> handoff bundle <date>"
+```bash
+# PREVIEW ONLY [handoff-remote-fetch]: git fetch origin
+# PREVIEW ONLY [handoff-branch-create]: git switch -c feat/<name>-<date>
+# PREVIEW ONLY [handoff-destination-create]: mkdir -p docs/handoff/<date>/
+# PREVIEW ONLY [handoff-copy-sanitized]: cp -R ./local-staging/sanitized/. docs/handoff/<date>/
+# PREVIEW ONLY [handoff-copy-manifest]: cp ./local-staging/MANIFEST.md docs/handoff/<date>/MANIFEST.md
+# PREVIEW ONLY [handoff-stage-files]: git add docs/handoff/<date>/
+# PREVIEW ONLY [handoff-commit-files]: git commit -m "feat: ingest <peer> handoff bundle <date>"
 ```
 Use scoped `git add <path>` — never sweep in unrelated working-tree changes.
 

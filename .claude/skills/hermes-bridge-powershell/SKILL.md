@@ -5,6 +5,10 @@ description: Reusable PowerShell/SSH templates for the read-only Hermes bridge a
 
 # Skill: hermes-bridge-powershell
 
+## Execution boundary
+
+This skill supplies reference templates only. It does not authorize state-changing administration. Templates 1-4 are read-only with respect to Hermes and git history. Template 2 keeps copy/open commands inert and routes the live, separately confirmed flow to `/war-room`. Route any Entra Connect change to `/ad-connect`, which must establish its own target, effect, scope, reversibility, checkpoint, and action-specific exact confirmation.
+
 **Trigger:** `/hermes-bridge-powershell` or "give me the SSH pull snippet", "scan the repo for secrets", "sanitization check" — when you need a vetted, read-only PowerShell/SSH template instead of writing one from scratch.
 
 **Goal:** Hand the operator copy-paste-safe, **read-only** templates with a plain-English comment on every line, following CLAUDE.md PowerShell rules (collapsed `<details>`, no aliases, ⚠️ flag anything destructive).
@@ -14,23 +18,29 @@ description: Reusable PowerShell/SSH templates for the read-only Hermes bridge a
 ---
 
 ## ⚠️ Safety note
-Every template here is **read-only / additive**. None mutate Hermes, none read credential files, none rewrite git history. If you adapt one into something destructive, re-run the Script Safety Auto-Scan (CLAUDE.md) and add a ⚠️ block.
+Templates 1-4 do not mutate Hermes, read credential files, create local files, launch a browser, or rewrite git history. Do not adapt these references into state-changing administration; use the canonical gated command for that action.
 
 ## Template 1 — Read-only remote command (ssh-agent auth)
 ```powershell
-# Run a read-only command on Hermes; auth via the already-loaded ssh-agent key (never read the key file)
-ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] "whoami; uptime"   # prove reachable + authed
+# Resolve the target from separately configured placeholder values.
+$sshUser = '[HERMES_SSH_USER]'
+$sshHost = '[HERMES_HOST]'
+# Reject whitespace, option prefixes, shell metacharacters, and malformed account values.
+if ($sshUser -cnotmatch '^[A-Za-z_][A-Za-z0-9_.-]{0,63}$' -or $sshHost -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$' -or $sshHost.Contains('..')) { throw 'Invalid Hermes SSH target.' }
+# Build one data-only OpenSSH destination.
+$target = '{0}@{1}' -f $sshUser, $sshHost
+# Run one constant read-only command with no TTY or forwarding; authentication stays in ssh-agent.
+ssh -T -a -x -o BatchMode=yes -o ClearAllForwardings=yes -o ConnectTimeout=15 $target 'whoami; uptime'
 ```
 
 ## Template 2 — Pull the newest matching file off Hermes (no write-back)
 ```powershell
-# 1) ask Hermes for the newest file path matching a glob (read-only 'ls')
-$latest = ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] `
-  "ls -t '[HERMES_DELIVERY_DIR]'/war_room_v30_*.html | head -1"   # newest first, take one
-# 2) copy that single file down (scp = one-way read pull; nothing written to Hermes)
-$dest = Join-Path $env:TEMP ("hermes_" + (Get-Date -Format yyyyMMdd_HHmmss) + ".html")
-scp [HERMES_SSH_USER]@[HERMES_HOST]:"$latest" $dest   # pull only
-Start-Process $dest   # open locally
+# The live selector is a constant remote Python program in scripts/hermes-bridge.ps1.
+# It returns one JSON basename that must match the War Room allowlist; raw `ls` output is never an scp operand.
+# The live destination is a proved-absent GUID path and copy/open have different exact confirmations.
+# PREVIEW ONLY [hermes-bridge-local-copy]: scp @validatedScpArguments
+# Start-Process -FilePath $verifiedGuidDestination
+# These lines are planning references only. Run operator-only `/war-room`; this template creates and opens nothing.
 ```
 
 ## Template 3 — Secret scan across FULL git history (gitleaks-equivalent, read-only)
@@ -54,12 +64,15 @@ Select-String -Path .\path\to\files\* -Pattern $forbidden   # PowerShell-native 
 # (git-bash equivalent: grep -nE "$forbidden" files...)
 ```
 
-## Template 5 — Force Entra Connect sync (kept for IT-ops parity; run on AD Connect server)
+## Template 5 — Entra Connect sync reference
+
+This is intentionally inert. Use `/ad-connect` for a separately reviewed and gated sync action.
+
 ```powershell
-Start-ADSyncSyncCycle -PolicyType Delta   # Delta = sync only changes (fast); Initial = full (slow, rare)
+# PREVIEW ONLY [hermes-bridge-delta-sync]: Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
 ## Notes
 - Hermes host/paths stay as `[HERMES_*]` placeholders — resolved at runtime via `~/.ssh/config`.
 - For passphrase-encrypted keys: rely on the ssh-agent; do **not** use `-o IdentitiesOnly=yes` (it bypasses the agent). See `/ask-hermes` for the canonical bridge.
-- All of these are reference snippets — explain each line to the operator when presenting (PowerShell-learning context).
+- All of these are reference snippets. Reference review never counts as approval to execute a state change.

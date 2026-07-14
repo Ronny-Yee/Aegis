@@ -4,11 +4,11 @@ description: Produce a sanitized IT incident report covering impact, timeline, c
 
 IMPORTANT: Do NOT ask for employee details, names, emails, departments, or any identifying info. Deliver the FULL procedure IMMEDIATELY using only placeholders like [FIRST_NAME], [UPN], [DEVICE_NAME], [DEPARTMENT]. The user will substitute real values themselves.
 
-Write an IT incident report for [YOUR_ORG]. Tell me what happened and I'll write the full report.
+Write an IT incident report for [@Aegion]. Tell me what happened and I'll write the full report.
 
 ---
 
-## Incident Report Writer — [YOUR_ORG] IT
+## Incident Report Writer — [@Aegion] IT
 
 **Tell me:**
 1. What happened? (brief description of the incident)
@@ -23,7 +23,7 @@ Write an IT incident report for [YOUR_ORG]. Tell me what happened and I'll write
 
 ```
 IT INCIDENT REPORT
-[YOUR_ORG] — [YOUR_DOMAIN]
+[@Aegion] — [@Aegion_DOMAIN]
 
 Incident Title: [Short description]
 Date: [Date]

@@ -1,8 +1,11 @@
 ---
 description: Set up a new Windows device — Entra ID join, Autopilot or manual Intune enrollment, policy/app deployment, naming convention, and post-setup verification. GUI first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /new-device-setup
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** For a new Windows device at [@Aegion], the goal is Entra ID join + Intune auto-enrollment in one shot during OOBE. Autopilot handles this automatically if the device is pre-registered; otherwise join manually during setup, then verify enrollment in Intune before handing off.
 
@@ -30,6 +33,8 @@ description: Set up a new Windows device — Entra ID join, Autopilot or manual 
 - Power on — Windows will begin the Out-of-Box Experience (OOBE)
 
 **2a. Autopilot path (device is pre-registered)**
+
+> **PREVIEW ONLY [device-autopilot-enrollment]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 If the device hash is already in Autopilot, OOBE will automatically detect it:
 1. On the "Let's set things up for your work or school" screen, sign in with the user's Entra/M365 account: [UPN]
 2. Autopilot kicks in — screen will show your org's branded setup screen (if Enrollment Status Page is configured)
@@ -38,6 +43,8 @@ If the device hash is already in Autopilot, OOBE will automatically detect it:
 5. Device will land at the Windows desktop signed in as [FIRST_NAME] [LAST_NAME]
 
 **2b. Manual Entra ID join (no Autopilot)**
+
+> **PREVIEW ONLY [device-entra-join]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 If Autopilot is not configured, join during OOBE:
 1. On the "How would you like to set up?" screen → choose **"Set up for an organization"**
 2. Sign in with [UPN] — this triggers Entra ID join and Intune auto-enrollment simultaneously (if your Intune MDM scope includes "All users" or the user's group)
@@ -45,6 +52,8 @@ If Autopilot is not configured, join during OOBE:
 4. If Intune enrollment didn't auto-trigger, proceed to Step 3 (manual enrollment)
 
 **3. Manual Intune enrollment (if not auto-enrolled)**
+
+> **PREVIEW ONLY [device-intune-enrollment]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 `Settings → Accounts → Access work or school → Connect`
 1. Click **Connect** → enter [UPN] → sign in with M365 credentials
 2. Choose **"Join this device to Microsoft Entra ID"** if prompted
@@ -66,11 +75,15 @@ If Autopilot is not configured, join during OOBE:
   - **Management type:** MDM
 
 **6. Install additional software**
+
+> **PREVIEW ONLY [device-software-install]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 - Required apps should be deployed via Intune automatically — check the device's Company Portal app if anything is missing
 - For any manual installs not in Intune: install now before handing off
 - Do not install unlicensed or unapproved software
 
 **7. Apply the naming convention**
+
+> **PREVIEW ONLY [device-rename]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 [@Aegion] device naming standard:
 - Desktop: `DT-FirstName,LastName` (e.g., `DT-[FIRST_NAME],[LAST_NAME]`)
 - Laptop: `LT-FirstName,LastName` (e.g., `LT-[FIRST_NAME],[LAST_NAME]`)
@@ -88,9 +101,8 @@ If the name is wrong, rename it — two options:
 <summary>PowerShell — for reference only</summary>
 
 ```powershell
-# Rename the computer to match naming convention (run as Administrator on the device)
-# Replace [DEVICE_NAME] with the correct name, e.g. DT-John,Smith or LT-Jane,Doe
-Rename-Computer -NewName "[DEVICE_NAME]" -Force -Restart  # renames and immediately reboots to apply the change
+# PREVIEW ONLY [device-rename-restart] — non-executing identity/restart reference; bind the resolved device and checkpoint open work in a separate runbook.
+# Rename-Computer -NewName "[DEVICE_NAME]" -Force -Restart
 ```
 
 </details>
@@ -101,8 +113,10 @@ After the device is named and policies applied, verify the following before hand
 - **Email:** Open Outlook — confirm mailbox loads for [UPN], no sign-in prompt
 - **Teams:** Open Microsoft Teams — confirm presence shows as Available, not signed out
 - **VPN:** Connect to VPN client if required for remote/branch access — confirm connection and internal resource access
+> **PREVIEW ONLY [device-printer-add]:** Adding a printer creates local queue/port/driver state. Route the exact device, printer name/IP, driver, and rollback to `/printer-issue`; this checklist cannot add it.
 - **Printers:** Add the office network printer by IP [PRINTER_IP] via `Settings → Printers & scanners → Add device`
 - **OneDrive:** Confirm OneDrive is syncing the user's files (should auto-configure from Intune policy)
+> **PREVIEW ONLY [device-windows-update-install]:** Installing updates and restarting are separate endpoint changes. Review the exact update set, maintenance window, rollback/recovery state, and target device before a separately approved action.
 - **Windows Update:** `Settings → Windows Update → Check for updates` — install any pending updates before handoff
 
 ## ⚠️ Risk warning
@@ -126,4 +140,6 @@ After the device is named and policies applied, verify the following before hand
 - [ ] **Shared device only:** full sign-in/MFA/OneDrive/Outlook/share/printer pass completed for EVERY assigned user, not just the first
 
 ## 📝 Jira-ready note
+Use the completed/handoff template only after every cited Entra, Intune, application, update, printer, inventory, and user test above is verified. Otherwise use a **Partial state — keep open** note listing the immutable device name/ID, verified steps, pending checks, and failures; do not claim handoff.
+
 > Set up new Windows [desktop/laptop] for [UPN] at [@Aegion]. Steps completed: Entra ID join via [OOBE / Autopilot / manual enrollment], Intune enrollment confirmed (compliant), device renamed to [DEVICE_NAME] per naming convention, Intune policies + required apps deployed, email/Teams/OneDrive/printer tested and verified. Device handed off to user. Time spent: [X] min.

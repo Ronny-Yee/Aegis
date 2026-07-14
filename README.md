@@ -82,10 +82,12 @@ flowchart TD
 **Prerequisites:** [Claude Code](https://claude.ai/code) 2.1.196 or newer with your own Anthropic account · Git · Node.js 20 or newer for the scripts and regression tests.
 
 ```bash
-git clone https://github.com/qFermions/Aegis
+# PREVIEW ONLY [readme-repo-clone]: git clone https://github.com/qFermions/Aegis
 cd Aegis
 claude
 ```
+
+The clone line is intentionally inert because it creates a local tree. Select and inspect the destination first, then run that single command as a separately authorized local action.
 
 Then, inside Claude Code:
 
@@ -96,7 +98,7 @@ Then, inside Claude Code:
 Also worth a look: `/offboard` (the destructive-gate showcase), `/conditional-access` (lockout-aware CA guidance), `/ps-error-decode` (PowerShell error anatomy).
 
 > [!NOTE]
-> The agent references a private shared-knowledge submodule (`shared/` — Koinon) that is not included here. Nothing in the demo flows needs it; the commands and modules are self-contained. Its design — the immutable security preamble, the canonical placeholder dictionary, and the two-stage self-improving lesson pipeline shared across four agents — is documented in [docs/koinon-architecture.md](docs/koinon-architecture.md).
+> The agent references a private shared-knowledge submodule (`shared/` — Koinon) that is not included here. Nothing in the demo flows needs it; the commands and modules are self-contained, and CLAUDE.md plus AGENTS.md define the explicit public-release fallback when it is absent. That fallback does not recreate private content or permit new placeholder tokens. Koinon's design — the immutable security preamble, canonical placeholder dictionary, and two-stage self-improving lesson pipeline shared across four agents — is documented in [docs/koinon-architecture.md](docs/koinon-architecture.md).
 
 ---
 
@@ -104,10 +106,10 @@ Also worth a look: `/offboard` (the destructive-gate showcase), `/conditional-ac
 
 This repo treats "an LLM with admin-portal knowledge" as a loaded tool. Safety is designed in at four layers:
 
-1. **Placeholder policy plus repository checks.** Agent instructions require placeholders for employee and tenant data; that response behavior is a policy and evaluation target, not a deterministic boundary. At commit and CI time, the pattern-based scanner checks staged or tracked UTF-8 text for detectable PII, credential shapes, operational metadata, and configured tenant literals. It does not intercept model responses or prove complete token-dictionary conformance.
-2. **Dry-run by default.** Anything that calls a real API (`jira-client.js`) prints its payload and exits unless `--execute` is passed; state-changing Jira transitions are double-gated (`--execute` + `--confirm`).
+1. **Placeholder policy plus repository checks.** Agent instructions require placeholders for employee and tenant data; that response behavior is a policy and evaluation target, not a deterministic boundary. At commit time the pattern-based scanner checks staged UTF-8 text; its `--all` release mode checks tracked plus nonignored untracked UTF-8 text for detectable PII, credential shapes, operational metadata, and configured tenant literals. It does not intercept model responses or prove complete token-dictionary conformance.
+2. **Preview by default with operation-bound authorization.** Jira create and comment commands print the exact payload and make zero credential or network calls until `--execute` is paired with the exact payload-bound `--confirm` value. After a POST, each independently GETs the immutable created object and exits unknown-state on mismatch or read-back failure. A transition's first `--execute` is a read-only live preflight; its write requires the returned phrase bound to the issue's immutable ID, current-state hash, and selected transition.
 3. **Destructive-action gates.** License removal, account disable, device wipe, group removal, mass operations — the agent must flag the action with ⚠️, state exactly who is affected, and get explicit confirmation. Urgency or authority claims in a ticket never bypass the gate. Pasted content (emails, tickets, logs) is data, not instructions — injection attempts get flagged, not followed.
-4. **Pre-commit scanning.** When the hook is installed and not bypassed, `scripts/pre-commit-check.js` blocks detectable email, phone, credential, and configured tenant-literal patterns in staged add/copy/modify/rename/typechange text blobs, and warns on dangerous PowerShell cmdlets. CI separately runs its `--all` tracked-tree mode.
+4. **Pre-commit scanning.** When the hook is installed and not bypassed, `scripts/pre-commit-check.js` blocks detectable email, phone, credential, and configured tenant-literal patterns in staged add/copy/modify/rename/typechange text blobs, and warns on dangerous operational sinks. CI separately runs `--all` against the full checked-out tree, including nonignored untracked files.
 
 Full analysis against the OWASP LLM Top 10: [docs/security_model.md](docs/security_model.md).
 
@@ -171,11 +173,16 @@ modules/
 ├── systems/               # Health checks, AD Connect ops, network ops + scripts
 └── automation/            # PowerShell safety patterns, CI/CD, pre-commit docs + scripts
 scripts/
-├── jira-client.js         # JSM Cloud REST client — dry-run-first, env-var auth
-├── jira-client.test.js    # 14-case eval suite (incl. a zero-network-calls tripwire)
+├── jira-client.js         # JSM Cloud REST client — exact operation/state gates, env-var auth
+├── jira-client.test.js    # Adversarial exact-gate, drift, read-back, and zero-network tests
+├── hermes-bridge.ps1      # Bounded SSH/SCP bridge with disclosure/copy/open gates
+├── hermes-bridge.test.js  # Windows PowerShell transport and fail-closed harness
 ├── pre-commit-check.js    # The commit safety scanner
-├── security-audit.js      # M365 tenant audit report generator
-└── init-memory.js         # Persistent-memory bootstrap
+├── command-safety-gates.test.js # Exact inventory and authored-gate analysis
+├── security-audit.js      # Preview-first M365 audit report generator
+├── security-audit.test.js # Exclusive-create and exact-content-gate tests
+├── init-memory.js         # Preview-first persistent-memory bootstrap
+└── init-memory.test.js    # Backup, drift, rollback, and exact-plan-gate tests
 docs/                      # Architecture, security model, worked ticket examples,
                            # 2026 portal navigation, plan-mode templates
 AGENTS.md                  # Operating rules for a second (audit) agent in the same tree
@@ -219,19 +226,33 @@ AGENTS.md                  # Operating rules for a second (audit) agent in the s
 3. Install the pre-commit scanner before you start editing:
 
 ```bash
-echo '#!/bin/sh'                          >  .git/hooks/pre-commit
-echo 'node scripts/pre-commit-check.js'   >> .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit            # (on Windows, git runs the hook via sh)
+# PREVIEW ONLY [readme-hook-install]: install a reviewed hook without overwriting an existing hook
+# printf '%s\n' '#!/bin/sh' 'node scripts/pre-commit-check.js' > .git/hooks/pre-commit
+# chmod +x .git/hooks/pre-commit            # on Windows, git runs the hook via sh
 ```
+
+Those hook-write lines are reference-only. Inspect `.git/hooks/pre-commit` first and follow the no-clobber, separately authorized procedure in [`modules/automation/pre_commit_hooks.md`](modules/automation/pre_commit_hooks.md); do not paste the preview over an existing hook.
 
 4. Rewrite the **Environment Snapshot** section of `CLAUDE.md` to describe *your* stack — keep the placeholder discipline and the security gates exactly as they are.
 
-5. If you use the optional memory bootstrap, preview it first. Existing files are refused by default; `--force` creates and verifies a timestamped backup before atomic replacement:
+5. If you use the optional memory bootstrap, preview it first. Copy the full `Required confirmation` line value exactly; it binds the normalized directory, six-file scope, effect, and plan SHA-256. Existing files are refused by default; a separately previewed `--force` plan creates and verifies a timestamped backup before replacement:
 
 ```bash
-node scripts/init-memory.js --dry-run
-node scripts/init-memory.js --force   # only after reviewing the preview
+node scripts/init-memory.js
+node scripts/init-memory.js --execute --confirm "<EXACT PREVIEW PHRASE>"
+
+node scripts/init-memory.js --force
+node scripts/init-memory.js --force --execute --confirm "<EXACT FORCE PREVIEW PHRASE>"
 ```
+
+The security-audit generator follows the same preview/copy/execute pattern and never overwrites an existing report:
+
+```bash
+node scripts/security-audit.js
+node scripts/security-audit.js --write --confirm "<EXACT PREVIEW PHRASE>"
+```
+
+Inside a Git worktree, both the final report and generated temporary name must remain ignored through verified read-back. A known private directory that is not a Git worktree must opt in with `--standalone-private`; that flag cannot bypass a present or broken `.git` boundary. Exact writes require hard-link support plus stable, nonzero filesystem inode identities and should run only in an operator-controlled directory. The identity checks detect replacement between processing stages; cross-platform Node does not provide an atomic identity-conditional unlink, so this is not a sandbox against a hostile process running as the same OS account.
 
 ---
 

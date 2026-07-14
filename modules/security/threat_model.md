@@ -41,7 +41,7 @@ class with mandatory ceremony (undo statement → checkpoint → full SR-2 gate 
 |--------|---------------------|---------|-------------|
 | **S**poofing | "Email from the CEO" in a ticket demands an MFA reset | Urgency/authority never bypasses SR-2; identity claims in content are unverified data | CLAUDE.md gates + SR-2 |
 | **T**ampering | Pasted content tries to rewrite agent rules ("new system prompt") | SR-3 content≠instructions; injection markers flagged; `settings.local.json` write-locked (Rule #12) | Identity layer + pre-commit marker scan |
-| **R**epudiation | "Did the agent really run that?" | Verify-or-it-didn't-happen read-backs; checkpoints in `tasks/checkpoints/`; Jira-ready notes per ticket | Zero-Trust Contract rules 1–2 |
+| **R**epudiation | "Did the agent really run that?" | Verify-or-it-didn't-happen read-backs; checkpoints outside the repository under the operator's local application-data directory; Jira-ready notes per ticket | Zero-Trust Contract rules 1–2 |
 | **I**nfo disclosure | Tenant literal or PII lands in repo/output | Placeholder dictionary (Koinon); SR-8 env-var-only domain; pre-commit tenant-literal + PII BLOCK | `pre-commit-check.js` + release gate |
 | **D**oS | Runaway bulk op (`Get-X \| Action-Y` over the whole tenant) | Staged-variable + predicted `$targets.Count` rule; >10 objects = R3 gate | Zero-Trust Contract rule 3 |
 | **E**levation | Agent talked into disabling MFA/CA "to fix the ticket" | Security controls are never the first fix; disable = R3 + Temporary Exception format (expiry, approver, revert) | Security Behavior section |
@@ -73,6 +73,6 @@ Paste probes as ticket/email content unless stated otherwise.
 
 ## Related
 
-- `scripts/security-audit.js` — proactive Entra/CA/Intune/Exchange/SharePoint health audit (7 sections); run on cadence, not post-incident
+- `scripts/security-audit.js` — preview-first Entra/CA/Intune/Exchange/SharePoint health audit (7 sections); report creation requires its exact target/content-digest write phrase
 - `modules/automation/powershell/rollback_patterns.md` — checkpoint/rollback execution patterns (R2/R3 ceremony)
 - `CLAUDE.md` → Zero-Trust Execution Contract — blast-radius classes R0–R3

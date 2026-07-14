@@ -1,8 +1,11 @@
 ---
 description: Systematic LAN/WAN troubleshooting decision tree for a Meraki MX/MS environment — symptom → isolation → ranked causes → fix → escalation. Meraki dashboard first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /lan-wan
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Isolate the blast radius first — **one user, one switch/area, or whole site (WAN)?** Meraki dashboard shows uplink + switch + client health in one place. WAN-down → it's the MX uplink or `[@Aegion_ISP]`, not the LAN.
 

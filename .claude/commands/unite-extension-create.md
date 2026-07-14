@@ -1,8 +1,11 @@
 ---
 description: Create a new [@Aegion_VOIP] extension — user account, DID, voicemail, call groups, desk phone provisioning, and test calls. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /unite-extension-create
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Creating a new extension in [@Aegion_VOIP] is a portal-only workflow — add the user, assign the extension and DID, configure voicemail, set call routing, then provision the desk phone by MAC. Do this in order; the phone can't register until the user record and extension are fully saved.
 
@@ -27,6 +30,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 
 ### 2. Create the user and assign the extension
 
+> **PREVIEW ONLY [voip-user-create]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 1. Go to **Users** → **Add User** (or **+ New User**).
 2. Fill in:
    - **First name:** [FIRST_NAME]
@@ -37,6 +42,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 
 ### 3. Assign a DID (direct inbound number)
 
+> **PREVIEW ONLY [voip-did-assign]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 1. On the user record → **Phone Numbers** tab.
 2. Click **Assign Number**.
 3. Select an available DID from the pool: [DID_NUMBER].
@@ -45,6 +52,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 5. Save.
 
 ### 4. Configure voicemail
+
+> **PREVIEW ONLY [voip-voicemail-config]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 1. On the user record → **Voicemail** tab.
 2. Set a voicemail **PIN** — use a secure default (e.g., employee-chosen PIN, or set a temporary one and require them to change it on first access).
@@ -57,6 +66,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 
 ### 5. Set call forwarding rules
 
+> **PREVIEW ONLY [voip-forwarding-config]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 1. On the user record → **Call Forwarding** or **Call Handling** tab.
 2. Configure:
    - **No answer:** forward to voicemail after [N] rings (typically 4)
@@ -66,6 +77,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 
 ### 6. Assign to a call group or hunt group (if applicable)
 
+> **PREVIEW ONLY [voip-call-group]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 1. Navigate to **Groups** (or **Hunt Groups** / **Call Queues**) in the admin portal.
 2. Open the relevant group for this user's department or role.
 3. Click **Add Member** → search for [USER_NAME] or [EXTENSION].
@@ -73,6 +86,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 5. Save.
 
 ### 7. Provision the desk phone
+
+> **PREVIEW ONLY [voip-phone-provision]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Option A — Auto-provision by MAC address (preferred):**
 
@@ -125,6 +140,8 @@ description: Create a new [@Aegion_VOIP] extension — user account, DID, voicem
 ---
 
 ## 📝 Jira-ready note
+
+Use the created/closing template only after every cited portal read-back and inbound, outbound, registration, and voicemail test above passes. Otherwise use a **Partial state — keep open** note listing the immutable extension/DID, verified steps, pending checks, and failures.
 
 > **New [@Aegion_VOIP] extension created — [JIRA-###]**
 >

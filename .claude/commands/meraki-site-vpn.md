@@ -1,8 +1,11 @@
 ---
 description: Configure and verify a Meraki MX-to-MX site-to-site VPN — topology, advertised subnets, no-overlap, firewall, verification. Supports the [@Aegion_WAN]→S2S migration. Dashboard first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /meraki-site-vpn
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Meraki Auto VPN makes MX-to-MX simple: set each site's role (hub/spoke or mesh), advertise the right local subnets, and **never overlap subnets** between sites. This is the target state for the `[@Aegion_WAN]` → site-to-site migration (`[@Aegion_REMOTE_ACCESS]` still on the old link → migrate it). For *troubleshooting* an existing tunnel, use `/vpn-check`.
 
@@ -11,6 +14,8 @@ description: Configure and verify a Meraki MX-to-MX site-to-site VPN — topolog
 - Plan subnets so they **don't overlap** (e.g., Site A 10.1.0.0/24, Site B 10.2.0.0/24).
 
 ## Step-by-step (dashboard first)
+
+> **PREVIEW ONLY [meraki-vpn-configuration]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 1. **Per site:** Security & SD-WAN → **Site-to-site VPN** → set **Type**: Hub (mesh) or Spoke. For two sites, mesh/hub-and-spoke both work.
 2. **Advertise subnets:** in the same page → **Local networks** → toggle **VPN: On** for the subnets each site should share. Leave guest/IoT subnets **off** unless intended.
 3. **NAT traversal / uplink:** leave Auto unless behind a strict upstream firewall (then Manual + port-forward UDP 500/4500).

@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 /**
  * security-audit.js
- * Generates a structured security audit report for an M365 tenant.
- * Outputs a ready-to-use checklist with exact portal paths and PS commands.
- * Run with: node scripts/security-audit.js
+ * Computes a structured security audit report for an M365 tenant.
+ * Default behavior is read-only; writing requires --write plus the exact
+ * target/content-SHA256 confirmation printed by the preview.
+ * Preview with: node scripts/security-audit.js
  * No npm install needed — uses only built-in Node.js modules.
  */
 
 const fs   = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const { spawnSync } = require('child_process');
 
-const TENANT   = process.env.TENANT   || '[YOUR_DOMAIN]';
+const TENANT   = process.env.TENANT   || '[@Aegion_DOMAIN]';
 const AUDITOR  = process.env.AUDITOR  || '[AUDITOR_NAME]';
 const TODAY    = new Date().toISOString().split('T')[0];
-const OUT_FILE = path.join(process.cwd(), `security-audit-${TODAY}.md`);
 
 // ── Audit sections ─────────────────────────────────────────────────────────
 const sections = [
@@ -315,17 +317,7 @@ function nextReviewDate() {
   return d.toISOString().split('T')[0];
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────
-function main() {
-  console.log(`security-audit.js — ${TENANT} security audit generator\n`);
-
-  const report = renderReport();
-  fs.writeFileSync(OUT_FILE, report, 'utf8');
-
-  console.log(`  ✓ Report written to: ${OUT_FILE}`);
-  console.log('');
-
-  // Print summary to console
+function auditCounts() {
   let critCount = 0, highCount = 0, medCount = 0;
   for (const s of sections) {
     for (const item of s.items) {
@@ -334,12 +326,407 @@ function main() {
       else if (item.risk === 'MEDIUM') medCount++;
     }
   }
-  console.log('Audit checklist:');
-  console.log(`  🔴 CRITICAL  ${critCount} checks`);
-  console.log(`  🟠 HIGH      ${highCount} checks`);
-  console.log(`  🟡 MEDIUM    ${medCount} checks`);
-  console.log('');
-  console.log(`Open ${path.basename(OUT_FILE)} in VS Code or any Markdown viewer to work through the audit.`);
+  return { critCount, highCount, medCount };
 }
 
-main();
+function digest(content) {
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+function normalizeAbsolute(input) {
+  return path.normalize(path.resolve(input));
+}
+
+function isPathInside(root, candidate) {
+  const relative = path.relative(normalizeAbsolute(root), normalizeAbsolute(candidate));
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+function lstatIfPresent(target, fileSystem = fs) {
+  try {
+    return fileSystem.lstatSync(target);
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function regularFileIdentity(stat, label) {
+  if (!stat.isFile() || stat.isSymbolicLink()) {
+    throw new Error(`${label} is not a regular non-link file.`);
+  }
+  const dev = String(stat.dev);
+  const ino = String(stat.ino);
+  const birthtimeNs = stat.birthtimeNs === undefined ? '' : String(stat.birthtimeNs);
+  if (
+    !/^\d+$/.test(dev) || BigInt(dev) === 0n ||
+    !/^\d+$/.test(ino) || BigInt(ino) === 0n ||
+    !/^\d+$/.test(birthtimeNs) || BigInt(birthtimeNs) === 0n
+  ) {
+    throw new Error(`${label} does not expose a stable nonzero filesystem identity; refusing identity-based handling.`);
+  }
+  return {
+    dev,
+    ino,
+    birthtimeNs
+  };
+}
+
+function sameFileIdentity(left, right) {
+  return Boolean(left && right) &&
+    left.dev === right.dev &&
+    left.ino === right.ino &&
+    left.birthtimeNs === right.birthtimeNs;
+}
+
+function assertOwnedRegularFile(fileSystem, target, expectedIdentity, label) {
+  if (!expectedIdentity) throw new Error(`${label} identity was not captured; refusing path-based cleanup.`);
+  const stat = fileSystem.lstatSync(target, { bigint: true });
+  const actualIdentity = regularFileIdentity(stat, label);
+  if (!sameFileIdentity(actualIdentity, expectedIdentity)) {
+    throw new Error(`${label} filesystem identity changed; refusing to remove or trust it.`);
+  }
+  return stat;
+}
+
+function assertNoLinksInExistingPath(target) {
+  const normalized = normalizeAbsolute(target);
+  const parsed = path.parse(normalized);
+  const relative = path.relative(parsed.root, normalized);
+  const components = relative === '' ? [] : relative.split(path.sep);
+  let cursor = parsed.root;
+
+  const rootStat = lstatIfPresent(cursor);
+  if (rootStat && rootStat.isSymbolicLink()) {
+    throw new Error(`Unsafe symbolic-link or junction/reparse path component: ${cursor}`);
+  }
+  for (const component of components) {
+    cursor = path.join(cursor, component);
+    const stat = lstatIfPresent(cursor);
+    if (!stat) break;
+    if (stat.isSymbolicLink()) {
+      throw new Error(`Unsafe symbolic-link or junction/reparse path component: ${cursor}`);
+    }
+  }
+}
+
+function findGitMetadataAncestor(start) {
+  let cursor = normalizeAbsolute(start);
+  for (;;) {
+    const marker = path.join(cursor, '.git');
+    const stat = lstatIfPresent(marker);
+    if (stat) return marker;
+    const parent = path.dirname(cursor);
+    if (parent === cursor) return null;
+    cursor = parent;
+  }
+}
+
+function assertGitIgnoredWhenInRepository(root, target, standalonePrivate = false) {
+  const probe = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], {
+    cwd: root,
+    encoding: 'utf8',
+    windowsHide: true
+  });
+  if (probe.error) {
+    throw new Error('Cannot prove the report target is outside Git tracking because Git is unavailable.');
+  }
+  if (probe.status !== 0) {
+    if (findGitMetadataAncestor(root)) {
+      throw new Error('Git metadata is present but worktree status could not be proved; refusing the report target.');
+    }
+    if (!standalonePrivate) {
+      throw new Error('Git worktree status could not be proved. A known private non-Git directory requires explicit --standalone-private.');
+    }
+    return;
+  }
+  if (probe.stdout.trim() !== 'true') {
+    throw new Error('Cannot prove the report target is outside Git tracking.');
+  }
+  const relative = path.relative(root, target);
+  const ignored = spawnSync('git', ['check-ignore', '--quiet', '--', relative], {
+    cwd: root,
+    encoding: 'utf8',
+    windowsHide: true
+  });
+  if (ignored.error || ignored.status !== 0) {
+    throw new Error('Report target must be Git-ignored; refusing a Git-trackable audit artifact.');
+  }
+}
+
+function assertSafeReportTarget(cwd, outputPath, options = {}) {
+  const root = normalizeAbsolute(cwd);
+  const target = normalizeAbsolute(outputPath);
+  if (/[\u0000-\u001f\u007f]/.test(target)) {
+    throw new Error('Report target must not contain control characters.');
+  }
+  if (!isPathInside(root, target)) {
+    throw new Error(`Report target must remain inside the resolved working directory: ${root}`);
+  }
+  const relative = path.relative(root, target);
+  const segments = relative.split(path.sep);
+  if (path.extname(target).toLowerCase() !== '.md') {
+    throw new Error('Report target must be a Markdown (.md) file.');
+  }
+  if (segments.some(segment => segment.toLowerCase() === '.git')) {
+    throw new Error('Report target must not be inside Git metadata.');
+  }
+  assertNoLinksInExistingPath(root);
+  assertNoLinksInExistingPath(target);
+  const rootStat = lstatIfPresent(root);
+  if (!rootStat || !rootStat.isDirectory()) {
+    throw new Error(`Resolved working directory is not a regular directory: ${root}`);
+  }
+  const parent = path.dirname(target);
+  const parentStat = lstatIfPresent(parent);
+  if (!parentStat || !parentStat.isDirectory() || parentStat.isSymbolicLink()) {
+    throw new Error('Report parent directory must already exist and must not be a symbolic link or junction/reparse point.');
+  }
+  if (!/^security-audit-[A-Za-z0-9][A-Za-z0-9._-]{0,119}\.md$/.test(path.basename(target))) {
+    throw new Error('Report filename must match security-audit-<safe-label>.md so the repository ignore policy applies.');
+  }
+  assertGitIgnoredWhenInRepository(root, target, options.standalonePrivate === true);
+  return target;
+}
+
+function parseArgs(argv) {
+  const options = { write: false, confirm: null, output: null, standalonePrivate: false, help: false };
+  const seen = new Set();
+  const mark = flag => {
+    if (seen.has(flag)) throw new Error(`${flag} may be supplied only once.`);
+    seen.add(flag);
+  };
+
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--write') {
+      mark('--write');
+      options.write = true;
+    } else if (arg === '--confirm') {
+      mark('--confirm');
+      if (!argv[i + 1] || argv[i + 1].startsWith('--')) {
+        throw new Error('--confirm requires the exact phrase printed by the preview.');
+      }
+      options.confirm = argv[++i];
+    } else if (arg.startsWith('--confirm=')) {
+      mark('--confirm');
+      const value = arg.slice('--confirm='.length);
+      if (!value) throw new Error('--confirm requires the exact phrase printed by the preview.');
+      options.confirm = value;
+    } else if (arg === '--output') {
+      mark('--output');
+      if (!argv[i + 1] || argv[i + 1].startsWith('--')) {
+        throw new Error('--output requires a path inside the working directory.');
+      }
+      options.output = argv[++i];
+    } else if (arg.startsWith('--output=')) {
+      mark('--output');
+      const value = arg.slice('--output='.length);
+      if (!value) throw new Error('--output requires a path inside the working directory.');
+      options.output = value;
+    } else if (arg === '--standalone-private') {
+      mark('--standalone-private');
+      options.standalonePrivate = true;
+    } else if (arg === '--help' || arg === '-h') {
+      mark('--help');
+      options.help = true;
+    } else {
+      throw new Error(`Unknown argument: ${arg}`);
+    }
+  }
+
+  if (options.help && argv.length !== 1) throw new Error('--help cannot be combined with other arguments.');
+  if (options.confirm !== null && !options.write) throw new Error('--confirm is valid only with --write.');
+  return options;
+}
+
+function buildWritePlan(cwd, outputPath, report, options = {}) {
+  const target = assertSafeReportTarget(cwd, outputPath, options);
+  const contentSha256 = digest(report);
+  const existing = lstatIfPresent(target);
+  return {
+    target,
+    contentSha256,
+    exists: existing !== null,
+    confirmation: existing === null
+      ? `WRITE SECURITY AUDIT TARGET ${target} CONTENT SHA256 ${contentSha256}`
+      : null
+  };
+}
+
+function writeReportExclusive(plan, report, cwd, dependencies = {}, options = {}) {
+  assertSafeReportTarget(cwd, plan.target, options);
+  if (lstatIfPresent(plan.target)) throw new Error('Report target already exists; refusing to overwrite it.');
+  const fileSystem = dependencies.fileSystem || fs;
+  const parent = path.dirname(plan.target);
+  let tempPath = null;
+  let descriptor = null;
+  let tempOwned = false;
+  let tempIdentity = null;
+  let installed = false;
+  let targetIdentity = null;
+  let targetState = 'not installed by this invocation';
+  let tempState = 'not created';
+  try {
+    tempPath = path.join(
+      parent,
+      `.${path.basename(plan.target)}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`
+    );
+    assertGitIgnoredWhenInRepository(cwd, tempPath, options.standalonePrivate === true);
+    descriptor = fileSystem.openSync(tempPath, 'wx', 0o600);
+    tempOwned = true;
+    tempState = 'created by this invocation';
+    tempIdentity = regularFileIdentity(fileSystem.fstatSync(descriptor, { bigint: true }), 'Invocation-owned temp');
+    fileSystem.writeFileSync(descriptor, report, 'utf8');
+    fileSystem.fsyncSync(descriptor);
+    fileSystem.closeSync(descriptor);
+    descriptor = null;
+
+    if (dependencies.beforeInstall) dependencies.beforeInstall(plan, { tempPath });
+    assertSafeReportTarget(cwd, plan.target, options);
+    assertGitIgnoredWhenInRepository(cwd, tempPath, options.standalonePrivate === true);
+    if (lstatIfPresent(plan.target)) throw new Error('Report target appeared before install; refusing to clobber it.');
+    assertOwnedRegularFile(fileSystem, tempPath, tempIdentity, 'Invocation-owned temp');
+    fileSystem.linkSync(tempPath, plan.target);
+    installed = true;
+    targetIdentity = tempIdentity;
+    targetState = 'installed pending read-back';
+    assertSafeReportTarget(cwd, plan.target, options);
+    assertGitIgnoredWhenInRepository(cwd, tempPath, options.standalonePrivate === true);
+    assertOwnedRegularFile(fileSystem, plan.target, targetIdentity, 'Installed report');
+    assertOwnedRegularFile(fileSystem, tempPath, tempIdentity, 'Invocation-owned temp');
+    fileSystem.unlinkSync(tempPath);
+    tempOwned = false;
+    tempState = 'removed';
+    if (dependencies.afterInstall) dependencies.afterInstall(plan, { tempPath });
+    assertSafeReportTarget(cwd, plan.target, options);
+    assertOwnedRegularFile(fileSystem, plan.target, targetIdentity, 'Installed report');
+    const reportReadBack = fileSystem.readFileSync(plan.target);
+    assertSafeReportTarget(cwd, plan.target, options);
+    assertOwnedRegularFile(fileSystem, plan.target, targetIdentity, 'Installed report');
+    if (digest(reportReadBack) !== plan.contentSha256) {
+      throw new Error('Report SHA256 readback verification failed.');
+    }
+    assertSafeReportTarget(cwd, plan.target, options);
+  } catch (error) {
+    const unresolved = [];
+    if (descriptor !== null) {
+      if (!tempIdentity) {
+        try {
+          tempIdentity = regularFileIdentity(fileSystem.fstatSync(descriptor, { bigint: true }), 'Invocation-owned temp');
+        } catch (identityError) {
+          unresolved.push(`temp identity: ${identityError.message}`);
+        }
+      }
+      try {
+        fileSystem.closeSync(descriptor);
+        descriptor = null;
+      } catch (closeError) {
+        unresolved.push(`descriptor: ${closeError.message}`);
+      }
+    }
+    if (installed) {
+      try {
+        assertOwnedRegularFile(fileSystem, plan.target, targetIdentity, 'Installed report');
+        if (digest(fileSystem.readFileSync(plan.target)) !== plan.contentSha256) {
+          throw new Error('installed report changed before rollback; refusing to clobber it');
+        }
+        assertOwnedRegularFile(fileSystem, plan.target, targetIdentity, 'Installed report');
+        fileSystem.unlinkSync(plan.target);
+        installed = false;
+        targetState = 'rolled back';
+      } catch (rollbackError) {
+        targetState = 'installed or changed; unresolved';
+        unresolved.push(`target: ${rollbackError.message}`);
+      }
+    }
+    if (tempOwned && tempPath) {
+      try {
+        const tempStat = lstatIfPresent(tempPath, fileSystem);
+        if (tempStat) {
+          assertOwnedRegularFile(fileSystem, tempPath, tempIdentity, 'Invocation-owned temp');
+          fileSystem.unlinkSync(tempPath);
+        }
+        tempOwned = false;
+        tempState = 'removed';
+      } catch (cleanupError) {
+        tempState = 'present or changed; unresolved';
+        unresolved.push(`temp: ${cleanupError.message}`);
+      }
+    }
+    throw new Error(
+      `Security-audit write failed: ${error.message}. ` +
+      `Partial-state report: target=${targetState}; temp=${tempState}; unresolved=[${unresolved.join(', ') || 'none'}]`
+    );
+  }
+}
+
+function run(argv = process.argv.slice(2), cwd = process.cwd(), dependencies = {}) {
+  const logger = dependencies.logger || console;
+  const options = parseArgs(argv);
+  if (options.help) {
+    logger.log('Usage: node scripts/security-audit.js [--output security-audit-<safe-label>.md] [--standalone-private] [--write --confirm "EXACT PHRASE"]');
+    logger.log('Default behavior computes and previews a Git-ignored report without writing a file. A known private non-Git directory requires explicit --standalone-private. Existing reports are never overwritten.');
+    logger.log('Exact writes require hard-link support and stable nonzero filesystem inode identities in an operator-controlled directory.');
+    return 0;
+  }
+
+  const report = renderReport();
+  const outputPath = options.output
+    ? path.resolve(cwd, options.output)
+    : path.join(cwd, `security-audit-${TODAY}.md`);
+  const plan = buildWritePlan(cwd, outputPath, report, {
+    standalonePrivate: options.standalonePrivate
+  });
+  const { critCount, highCount, medCount } = auditCounts();
+
+  logger.log(`security-audit.js — ${TENANT} security audit generator`);
+  logger.log('Mode: preview only');
+  logger.log(`Report target: ${plan.target}`);
+  logger.log(`Content SHA256: ${plan.contentSha256}`);
+  logger.log('Audit checklist:');
+  logger.log(`  🔴 CRITICAL  ${critCount} checks`);
+  logger.log(`  🟠 HIGH      ${highCount} checks`);
+  logger.log(`  🟡 MEDIUM    ${medCount} checks`);
+
+  if (plan.exists) {
+    logger.log('Blocked: the report target already exists. This command never overwrites an existing report.');
+    logger.log('No files changed.');
+    return options.write ? 2 : 0;
+  }
+
+  logger.log(`Required confirmation: ${plan.confirmation}`);
+  if (!options.write) {
+    logger.log('No files changed.');
+    return 0;
+  }
+  if (options.confirm !== plan.confirmation) {
+    logger.error('Exact confirmation mismatch. Confirmation is case- and whitespace-sensitive. No files changed.');
+    return 2;
+  }
+
+  writeReportExclusive(plan, report, cwd, dependencies, {
+    standalonePrivate: options.standalonePrivate
+  });
+  logger.log(`Verified report written once: ${plan.target}`);
+  return 0;
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────
+function main() {
+  try {
+    process.exitCode = run();
+  } catch (error) {
+    console.error(`security-audit.js: ${error.message}`);
+    process.exitCode = 1;
+  }
+}
+
+if (require.main === module) main();
+
+module.exports = {
+  buildWritePlan,
+  parseArgs,
+  renderReport,
+  run
+};

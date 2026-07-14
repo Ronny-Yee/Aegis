@@ -258,8 +258,8 @@ Operator pastes ticket description
 │
 ├── scripts/
 │   ├── pre-commit-check.js           # Pre-commit safety scanner (Node.js)
-│   ├── security-audit.js             # M365 tenant security audit report generator
-│   └── init-memory.js                # Initializes agent memory files for new installs
+│   ├── security-audit.js             # Preview-first M365 audit report generator
+│   └── init-memory.js                # Preview-first exact-plan memory bootstrap
 │
 └── tasks/
     ├── todo.md                        # Current task tracking

@@ -1,5 +1,9 @@
 # Systems Health Checks
 
+## Execution boundary
+
+This module is planning/reference only and never authorizes a state change. Read-only health checks remain available. Route connector/service actions to `/ad-connect`, identity-risk actions to `/security-alert-triage`, device cleanup to `/device-wipe`, compliance remediation to `/intune-compliance`, and license changes to `/license-audit`. The destination command must independently resolve the target and require its own action-specific exact confirmation.
+
 Operational checks to run on a defined schedule. Each check includes the portal path,
 what a healthy result looks like, and what to do if the check fails.
 
@@ -21,9 +25,12 @@ what a healthy result looks like, and what to do if the check fails.
 **Unhealthy:** `Sync has not completed` or `Last sync > 2 hours ago`
 
 **Action if unhealthy:**
+
+> **PREVIEW ONLY [health-sync-remediation]:** Route any ADSync service restart or connector cycle to `/ad-connect`; this health check cannot perform either action.
+
 - Log in to the AD Connect server
 - Open Synchronization Service Manager → look for errors in Connector Operations
-- Common fix: restart the ADSync service or re-run delta sync
+- Record whether a service restart or delta sync is proposed, then use `/ad-connect` for separate review
 
 <details>
 <summary>PowerShell — force sync and check status</summary>
@@ -35,8 +42,7 @@ Import-Module ADSync  # Load the sync module
 # Check last sync time
 Get-ADSyncScheduler | Select-Object LastSyncCycleResult, LastSyncCycleStartedDate
 
-# Force a delta sync (only syncs changes)
-Start-ADSyncSyncCycle -PolicyType Delta
+# PREVIEW ONLY [health-delta-sync]: Start-ADSyncSyncCycle -PolicyType Delta
 
 # After sync completes, verify result
 Get-ADSyncScheduler | Select-Object LastSyncCycleResult
@@ -54,6 +60,9 @@ Get-ADSyncScheduler | Select-Object LastSyncCycleResult
 **Healthy:** 0 unreviewed high-risk users
 
 **Action if flagged:**
+
+> **PREVIEW ONLY [health-risky-user-action]:** Route risk dismissal or compromise containment to `/security-alert-triage`; this health check cannot change risk or account state.
+
 - Click the user → review the risk detections (leaked credentials? atypical travel? malware-linked IP?)
 - If confirmed compromise → follow IR-01 (incident_response.md)
 - If false positive → dismiss the risk and document the reason
@@ -84,6 +93,9 @@ If an incident affects business-critical services (Exchange, Teams), notify affe
 **Healthy:** Count trending down or stable; all high-priority devices compliant
 
 **Action:** For each non-compliant device:
+
+> **PREVIEW ONLY [health-compliance-remediation]:** Route device remediation or a compliance sync to `/intune-compliance`; route any retire, wipe, or record deletion separately to `/device-wipe`.
+
 - Check what policy it's failing (BitLocker, OS version, passcode, Defender)
 - Contact the device owner to remediate (see troubleshooting.md T-10)
 - If device has been abandoned → check with HR if user is still active
@@ -107,8 +119,7 @@ repadmin /replsummary  # Shows replication summary — look for failure counts
 # Detailed per-DC status
 repadmin /showrepl     # Shows last replication result for each DC partner
 
-# If failures found — force replication
-repadmin /syncall /AdeP  # Sync all partitions from all DCs
+# PREVIEW ONLY [health-force-replication]: repadmin /syncall /AdeP
 ```
 </details>
 
@@ -127,6 +138,9 @@ repadmin /syncall /AdeP  # Sync all partitions from all DCs
 - Cross-reference: is this user still active? Was the device replaced?
 
 **Action:** Delete stale device records:
+
+> **PREVIEW ONLY [health-stale-device-delete]:** Route the resolved device and record-only deletion intent to `/device-wipe`; this health check cannot delete, retire, or wipe a device.
+
 Intune → [device] → Delete (this removes from Intune only, does not affect the physical device)
 
 ---
@@ -142,6 +156,9 @@ Intune → [device] → Delete (this removes from Intune only, does not affect t
 **Healthy:** Utilization between 85–95% (buffer for new hires, not over-licensed)
 
 **Action:**
+
+> **PREVIEW ONLY [health-license-action]:** Route any purchase decision to the operator and any assignment/removal to `/license-audit`; this report cannot change subscriptions or users.
+
 - Under-licensed (>95% used): purchase more seats before next hire
 - Over-licensed (<80% used): review user list for inactive accounts consuming licenses
 
@@ -176,6 +193,9 @@ Cross-reference with compliance_checks.md Check 4.
 **What:** The AD Connect server is a critical single point of failure. Keep it patched.
 
 **Checks:**
+
+> **PREVIEW ONLY [health-connect-maintenance]:** Route any server patch, service restart, or Entra Connect upgrade to `/ad-connect` for a separate maintenance plan. This health check cannot perform maintenance.
+
 1. Windows Update status on AD Connect server — no pending critical updates
 2. Entra Connect version: Entra → Hybrid management → Entra Connect → version number
    - Compare against latest at: learn.microsoft.com/entra/identity/hybrid/connect/reference-connect-version-history

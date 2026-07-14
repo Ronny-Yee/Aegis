@@ -1,8 +1,11 @@
 ---
 description: Reset a user's password in a hybrid AD → Entra environment — portal first, force change at next logon, revoke sessions, optional MFA re-registration. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /password-reset
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** In a hybrid environment, **on-prem AD is the source of authority for synced users** — reset there, then let Entra Connect sync. Cloud-only users reset directly in Entra. Use `[FIRST_NAME]` / `[UPN]` — never the real name.
 
@@ -13,52 +16,128 @@ description: Reset a user's password in a hybrid AD → Entra environment — po
 
 ## Step-by-step fix (portal/GUI first)
 
+<!-- SAFETY GATE [password-reset-synced-portal] -->
+- **Target:** [first.last] mapped to [UPN]
+- **Effect:** replace the authoritative on-prem AD password and require a change at next sign-in
+- **Scope:** one verified synced identity; no cloud-side reset
+- **Reversibility:** not reversible; another verified AD reset is required
+- **Required confirmation:** Type exactly `RESET AD PASSWORD FOR [first.last] MAPPED TO [UPN]`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [password-reset-synced-portal]:** Only the exact match authorizes the synced-user branch. Never reset both copies of a synced identity.
+
 **Synced user (on-prem AD is authority):**
 1. **ADUC** (`dsa.msc`) → find `[FIRST_NAME] [LAST_NAME]` → right-click → **Reset Password**.
 2. Set a temp password; check **"User must change password at next logon"**.
-3. Account tab → **Unlock account** if locked.
-4. Force sync from the AD Connect server (PowerShell below) or wait ~30 min.
+> **PREVIEW ONLY [password-account-unlock]:** Account unlock is a separate identity change and is not authorized by a password-reset phrase.
+3. If locked, move account unlock into a separate reviewed action.
+4. Wait for the normal sync cycle. A forced sync requires a separate reviewed `/ad-connect` runbook.
 5. Confirm it reached cloud: Entra → Users → `[UPN]`.
 
 **Cloud-only user:**
+<!-- SAFETY GATE [password-reset-cloud-portal] -->
+- **Target:** [UPN]
+- **Effect:** replace the cloud password and require a change at next sign-in
+- **Scope:** one verified cloud-only identity
+- **Reversibility:** not reversible; another verified cloud reset is required
+- **Required confirmation:** Type exactly `RESET CLOUD PASSWORD FOR [UPN]`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [password-reset-cloud-portal]:** Only the exact match authorizes the cloud-only branch. Stop if on-premises sync is enabled.
 1. **Microsoft 365 admin center** → Users → Active users → `[UPN]` → **Reset password**.
 2. Auto-generate or set temp; check **"Require this user to change their password"**.
 
-**After reset (both):** Entra → Users → `[UPN]` → **Revoke sessions** (kills existing stolen tokens).
+<!-- SAFETY GATE [password-session-revoke-portal] -->
+- **Target:** [UPN]
+- **Effect:** invalidate Microsoft Entra refresh tokens and browser session cookies
+- **Scope:** Entra-managed refresh tokens and browser cookies for one user; current access tokens and app-issued sessions can persist until expiry
+- **Reversibility:** not reversible; the user must authenticate again
+- **Required confirmation:** Type exactly `REVOKE ENTRA SESSIONS FOR [UPN]`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [password-session-revoke-portal]:** Only after the separate exact match, Entra → Users → `[UPN]` → **Overview** → **Revoke sessions**. A password-reset confirmation never authorizes this effect; verify after propagation.
 
 **Combo case — MFA-locked too (new phone + forgotten password):** order matters.
-1. **Clear auth methods FIRST:** Entra → Users → `[UPN]` → **Authentication methods** → delete the stale methods.
+1. Use the separate exact method-ID deletion gate in `/mfa-issue`; this command does not authorize deleting authentication methods.
 2. **Then** reset the password (steps above).
 3. **Then** the user re-registers at **aka.ms/mfasetup** on first sign-in (full flow incl. the CA gotcha: `/mfa-issue`).
 Resetting the password first just walks the user into an MFA wall they can't pass — they sign in with the temp password and get prompted on a phone they no longer have.
 
 <details>
-<summary>PowerShell — for reference only</summary>
+<summary>PowerShell — non-executing AD Connect sync reference</summary>
 
 ```powershell
-# --- Force Entra Connect sync (run ON the AD Connect server) ---
-Start-ADSyncSyncCycle -PolicyType Delta   # push only changed objects to Entra (fast)
+# PREVIEW ONLY [password-reset-delta-sync] — non-executing sync reference; run only from a separate reviewed AD Connect runbook.
+# Start-ADSyncSyncCycle -PolicyType Delta
+```
+</details>
 
-# --- Cloud-only reset via Graph (admin workstation) ---
-Connect-MgGraph -Scopes "User.ReadWrite.All"               # connect with password-reset rights
-$pw = @{ forceChangePasswordNextSignIn = $true; password = "[TEMP_PASSWORD]" }  # temp pw, must-change ON
-Update-MgUser -UserId "[UPN]" -PasswordProfile $pw          # apply the reset to the cloud account
+<details>
+<summary>PowerShell — cloud-only password reset</summary>
 
-# --- Revoke all active sessions (kills existing tokens) ---
-Revoke-MgUserSignInSession -UserId "[UPN]"                  # ⚠️ signs the user out everywhere
+```powershell
+Connect-MgGraph -Scopes "User.ReadWrite.All"
+$upn = "[UPN]"
+$user = Get-MgUser -UserId $upn -Property Id,UserPrincipalName,OnPremisesSyncEnabled -ErrorAction Stop
+if ($user.OnPremisesSyncEnabled -eq $true) {
+    throw "The resolved identity is synchronized from on-premises AD. Stop and use the authoritative on-premises reset path."
+}
+# SAFETY GATE [password-cloud-reset]
+# Target: the resolved cloud-only user principal name and immutable ID
+# Effect: replaces the cloud password and forces a change at next sign-in
+# Scope: one user account
+# Reversibility: not reversible; another verified reset is required
+$requiredConfirmation = "RESET CLOUD PASSWORD FOR $($user.UserPrincipalName) WITH ID $($user.Id)"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm"
+if ($confirmation -ceq $requiredConfirmation) {
+    $temporaryCredential = Get-Credential -UserName $user.UserPrincipalName -Message "Enter the temporary password for the verified cloud-only user"
+    $pw = @{ forceChangePasswordNextSignIn = $true; password = $temporaryCredential.GetNetworkCredential().Password }
+    try {
+        Update-MgUser -UserId $user.Id -PasswordProfile $pw -ErrorAction Stop
+        $readBack = Get-MgUser -UserId $user.Id -Property Id,UserPrincipalName -ErrorAction Stop
+        if ([string]$readBack.Id -cne [string]$user.Id -or [string]$readBack.UserPrincipalName -cne [string]$user.UserPrincipalName) { throw "Password update returned but identity read-back failed. Treat password state as UNKNOWN." }
+    } finally {
+        $pw.password = $null
+        $pw = $null
+        $temporaryCredential = $null
+    }
+} else {
+    throw "Confirmation did not match. The cloud password was not reset."
+}
+```
+</details>
+
+<details>
+<summary>PowerShell — revoke Microsoft Entra sessions</summary>
+
+```powershell
+Connect-MgGraph -Scopes "User.RevokeSessions.All"
+$upn = "[UPN]"
+$sessionUser = Get-MgUser -UserId $upn -Property Id,UserPrincipalName -ErrorAction Stop
+if ([string]::IsNullOrWhiteSpace([string]$sessionUser.Id) -or [string]$sessionUser.UserPrincipalName -cne $upn) { throw "The exact Entra identity was not resolved. No change was made." }
+# SAFETY GATE [password-session-revoke]
+# Target: canonical UPN and immutable ID in $sessionUser
+# Effect: invalidates Entra refresh tokens and browser session cookies
+# Scope: Entra-managed refresh tokens and browser cookies for one user; other app sessions can persist until expiry
+# Reversibility: not reversible; the user must authenticate again
+$requiredConfirmation = "REVOKE ENTRA SESSIONS FOR $($sessionUser.UserPrincipalName) ID $($sessionUser.Id)"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm"
+if ($confirmation -ceq $requiredConfirmation) {
+    $revocationAccepted = Revoke-MgUserSignInSession -UserId $sessionUser.Id -ErrorAction Stop
+    if ($revocationAccepted.Value -ne $true) { throw "Entra did not acknowledge the revocation request. Current session state is unknown." }
+} else {
+    throw "Confirmation did not match. Entra sessions were not revoked."
+}
 ```
 </details>
 
 ## ⚠️ Risk warning
-- `Revoke-MgUserSignInSession` signs the user out of **all** sessions/devices — expected; warn them they'll re-auth everywhere.
+- `Revoke-MgUserSignInSession` invalidates Entra refresh tokens and browser cookies after propagation; current access tokens and app-issued sessions can persist until expiry.
 - For a synced user, a cloud-side reset can be overwritten at next sync — always reset **on-prem** for synced users.
 
 ## ✅ Verification checklist
 - [ ] User signs in with temp password and is forced to change it
 - [ ] (Synced) change visible in Entra after sync — `Get-MgUser -UserId "[UPN]"`
-- [ ] Sessions revoked (old tokens dead)
+- [ ] Entra session revocation completed and sign-in logs were checked after propagation; no claim is made about app-issued sessions
 - [ ] MFA working, or re-registered via `/mfa-issue`
 - [ ] Account not locked
 
 ## 📝 Jira-ready note
-> Resolved [date/time]. Reset password for `[UPN]` ([synced via on-prem AD / cloud-only]). Temp password issued with force-change at next logon; active sessions revoked. User confirmed sign-in + password change. Time spent: [X] min.
+> Resolved [date/time]. Reset password for `[UPN]` ([synced via on-prem AD / verified cloud-only]). Temp password issued with force-change at next logon. Entra refresh-token/browser-cookie revocation [requested and checked after propagation / not requested]; current access tokens and app-issued sessions may persist until their own expiry. User confirmed sign-in + password change. Time spent: [X] min.

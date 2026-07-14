@@ -2,6 +2,10 @@
 
 Four anonymized ticket walk-throughs in the canonical §4 response format. Each shows the full Verdict → What to check first → Step-by-step fix → PowerShell (for reference only) → ⚠️ Risk warning → ✅ Verification checklist → 📝 Jira-ready note arc. All identifying data is placeholder-only.
 
+## Execution boundary
+
+These worked examples are planning/reference material only. They do not authorize state changes, and copying a procedure from this file is prohibited. Use the exact canonical command named at each preview notice; that command must resolve the target and require its own action-specific exact confirmation immediately before its one action. Generic `yes`, `proceed`, or approval of a ticket plan is never sufficient.
+
 ---
 
 ## Example 1 — Hybrid AD user can't sign in to M365
@@ -17,6 +21,9 @@ Almost certainly an Entra Connect sync lag after an on-prem password change, or 
 3. AD Connect server → was the password changed in on-prem AD in the last 30 min?
 
 ### Step-by-step fix
+
+> **PREVIEW ONLY [ticket-signin-remediation]:** Use `/password-reset` for an account unlock or password action and `/ad-connect` for a sync request. This example does not authorize either change.
+
 1. If AD shows the account locked: AD Users & Computers → right-click [UPN] → **Unlock Account**.
 2. If sign-in logs show "wrong password" but AD looks fine: confirm the user is typing the *current* password (not their old one).
 3. If they reset on-prem recently and it hasn't propagated: force a delta sync on the AD Connect server (PS block below).
@@ -28,13 +35,13 @@ Almost certainly an Entra Connect sync lag after an on-prem password change, or 
 
 ```powershell
 # Plain English: forces an incremental sync from on-prem AD to Entra ID. Run on the AD Connect server.
-Start-ADSyncSyncCycle -PolicyType Delta
+# PREVIEW ONLY [ticket-delta-sync-ps]: Start-ADSyncSyncCycle -PolicyType Delta
 # Delta = only changes since last sync (~30 sec). Initial = full sync (slow, rare).
 ```
 </details>
 
 ### ⚠️ Risk warning
-None for the unlock + sync path. Do **not** reset the password as the first move — if the issue is sync lag, a reset just adds another sync round-trip.
+Unlock and connector sync are state changes and require their canonical gates. Do **not** reset the password as the first move — if the issue is sync lag, a reset just adds another sync round-trip.
 
 ### ✅ Verification checklist
 - Sign-in logs show a successful authentication after the fix
@@ -59,6 +66,9 @@ Need to clear all registered MFA methods, then have the user re-register Authent
 3. Confirm with the user that you're talking to the actual person (callback to a known good number — social engineering risk on MFA resets is real).
 
 ### Step-by-step fix
+
+> **PREVIEW ONLY [ticket-mfa-remediation]:** Use `/mfa-issue` for method deletion or session revocation and `/conditional-access` for any policy exception. This example does not authorize either action.
+
 1. Entra ID → Users → [UPN] → **Authentication methods** → delete every entry (Microsoft Authenticator, phone, alternate phone, app passwords).
 2. Tell the user: go to **aka.ms/mfasetup** on their new phone, sign in, follow the prompts to register Authenticator.
 3. Add a phone-number SMS fallback after primary registration (Authentication methods → + Add → Phone).
@@ -71,12 +81,16 @@ Need to clear all registered MFA methods, then have the user re-register Authent
 ```powershell
 # Plain English: lists the user's registered authentication methods. Read-only.
 Get-MgUserAuthenticationMethod -UserId "[UPN]"
-# Each method has an Id; you'd then call Remove-MgUserAuthentication<Method> per type.
-# The portal does this in one click — only use PS if scripting bulk resets.
+# PREVIEW ONLY [ticket-mfa-method-remove-ps]: Remove-MgUserAuthenticationMethod -UserId "[UPN]" -AuthenticationMethodId $methodId
+# The method-specific reviewed action must still route through `/mfa-issue`.
+# This reference performs no removal; use `/mfa-issue` for an action-local gate.
 ```
 </details>
 
 ### ⚠️ Risk warning
+
+> **PREVIEW ONLY [ticket-ca-exception]:** A Conditional Access exclusion is a separate high-risk policy action. Route it to `/conditional-access`; this example cannot approve or execute it.
+
 If a Conditional Access policy requires "MFA from a compliant/trusted device" and the user has *no* registered method, they'll be stuck. **Temporary exception — high risk:** exclude [UPN] from that one CA policy, let them register, re-add to the policy. Document the exception in the Jira ticket, set a reminder to confirm re-inclusion within 24h.
 
 ### ✅ Verification checklist
@@ -94,18 +108,21 @@ If a Conditional Access policy requires "MFA from a compliant/trusted device" an
 **Ticket:** "[FIRST_NAME] [LAST_NAME]'s last day was yesterday. Remove their M365 Business Premium license."
 
 ### Verdict
-Standard offboarding step. **Destructive-action gate fires** — confirm before executing.
+Standard offboarding step. **Destructive-action gate fires** — `/license-audit` must require the target-bound exact phrase immediately before removal.
 
 ### What to check first
 1. M365 admin → Users → Active users → [UPN] → confirm this is the right person (check display name + department).
 2. Confirm their mailbox conversion status — if not yet converted to shared, removing the license will start the 30-day mailbox deletion clock.
-3. Has sign-in already been blocked? If not, do that first (Entra → Users → [UPN] → Block sign-in = Yes).
+3. Record whether sign-in is already blocked. If not, route the account block to `/offboard` as a separate gated action.
 
 ### Step-by-step fix
-1. ⚠️ Confirm with the requester: "About to remove the M365 Business Premium license from [UPN]. After removal, OneDrive becomes inaccessible to the user and mailbox enters a 30-day grace period unless already converted to shared. Proceed? (yes/no)"
-2. On explicit "yes": M365 admin → Users → Active users → [UPN] → **Licenses and apps** → uncheck Business Premium → Save.
+
+> **PREVIEW ONLY [ticket-offboard-license]:** Use `/offboard` to verify sequencing and `/license-audit` for the separate license action. Each command must display its resolved target and action-specific phrase; this example supplies no approval.
+
+1. Confirm the mailbox and OneDrive prerequisites in `/offboard`. Generic `yes` or `proceed` is invalid for license removal.
+2. Invoke `/license-audit` for the resolved [UPN] and [SKU_ID]; complete only the confirmation generated for that exact action.
 3. Verify: M365 admin → Billing → Licenses → confirm the seat returned to the pool.
-4. If mailbox wasn't converted to shared: do that next (EAC → Recipients → [mailbox] → **Convert to shared**).
+4. If mailbox conversion is required, return to `/offboard` and run it as a separate gated action before license removal.
 
 ### PowerShell — for reference only
 <details>
@@ -113,14 +130,14 @@ Standard offboarding step. **Destructive-action gate fires** — confirm before 
 
 ```powershell
 # Plain English: removes the M365 Business Premium SKU from the user. -RemoveLicenses takes a SkuId.
-Set-MgUserLicense -UserId "[UPN]" -RemoveLicenses @("[SKU_ID]") -AddLicenses @()
+# PREVIEW ONLY [ticket-license-remove-ps]: Set-MgUserLicense -UserId "[UPN]" -RemoveLicenses @("[SKU_ID]") -AddLicenses @()
 # ⚠️ This is the destructive line — flagged by the script-safety scanner.
-# Confirm [SKU_ID] is the Business Premium SKU before running.
+# Validate [SKU_ID] inside `/license-audit`; this commented block cannot run.
 ```
 </details>
 
 ### ⚠️ Risk warning
-**Destructive — gate required.** Without explicit "yes, proceed" from the requester, do not execute. After removal, the user's OneDrive becomes inaccessible (transfer ownership *first*), and the mailbox starts a 30-day deletion clock if not already shared. This is irreversible past 30 days.
+**Destructive — action-local gate required.** Requester authorization is a prerequisite, not execution approval. `/license-audit` must resolve [UPN] and [SKU_ID] and require the exact generated phrase immediately before removal. After removal, the user's OneDrive becomes inaccessible (transfer ownership *first*), and the mailbox starts a 30-day deletion clock if not already shared. This is irreversible past 30 days.
 
 ### ✅ Verification checklist
 - License count in M365 admin → Billing shows the seat returned
@@ -129,7 +146,9 @@ Set-MgUserLicense -UserId "[UPN]" -RemoveLicenses @("[SKU_ID]") -AddLicenses @()
 - OneDrive ownership transferred to manager (separate step)
 
 ### 📝 Jira-ready note
-> Resolved [date/time]. License removed from [UPN] after explicit confirmation from [REQUESTER]. Mailbox converted to shared (transferred manager access to [MANAGER_NAME]). OneDrive ownership transferred. Sign-in already blocked yesterday. Seat returned to pool. Time spent: ~15 min.
+Use this completed-state form only after every item below has the stated read-back. If any action was not performed or its state is unknown, record the verified subset plus `UNKNOWN/POSSIBLY CHANGED` and the next owner instead.
+
+> [Only after all cited checks pass] Resolved [date/time]. License removal for [UPN] was verified under the exact user/SKU gate after requester authorization. Mailbox Shared state and manager delegation were read back. OneDrive manager access was verified. Source-authoritative sign-in containment was already verified. Billing read-back showed the seat returned to the pool. Time spent: [X] min.
 
 ---
 
@@ -147,13 +166,16 @@ Site-wide symptom — check WAN uplink and AP load before touching individual cl
 4. Wireless → Access points — client count per AP. Anything over 25-30 = oversubscription.
 
 ### Step-by-step fix
-1. If uplink shows packet loss or high latency: ISP issue. Call [@Aegion_ISP] support, give them the public IP at [@Aegion_SITE_2] and a 4h event-log snippet.
+
+> **PREVIEW ONLY [ticket-network-remediation]:** Keep diagnostics in this example read-only. Route traffic-shaping changes to `/wifi-issue` or `/lan-wan`, and route uplink/VPN cutovers to `/meraki-site-vpn`; this example does not authorize those changes.
+
+1. If uplink shows packet loss or high latency: collect a sanitized 4h event-log summary for an operator-authorized [@Aegion_ISP] escalation. This example does not contact or submit to the provider.
 2. If uplink is clean but an AP is overloaded: identify the AP, check if a non-work device pulled a huge download (Network-wide → Clients → sort by usage).
-3. If it's clearly a single user/device hogging bandwidth: apply traffic shaping at the SSID level (Wireless → Firewall & traffic shaping → set per-client cap on guest SSID).
-4. If nothing obvious: failover test — Meraki → Security & SD-WAN → manually fail to secondary uplink if one exists, see if speed recovers.
+3. If it's clearly a single user/device hogging bandwidth: plan the desired traffic-shaping change, then route it to `/wifi-issue` or `/lan-wan` for separate review.
+4. If nothing obvious: record the proposed failover target and rollback, then route the cutover to `/meraki-site-vpn` for separate review.
 
 ### ⚠️ Risk warning
-Don't reboot the MX during business hours unless you have a confirmed firmware bug — it'll drop everyone for ~90 seconds. Schedule reboots after hours and announce them.
+This example cannot schedule or reboot an MX. Any reboot requires a separate operator-owned maintenance runbook because it interrupts the entire site.
 
 ### ✅ Verification checklist
 - Meraki dashboard shows uplink throughput/latency back at baseline

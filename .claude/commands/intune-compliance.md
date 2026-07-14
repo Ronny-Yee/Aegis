@@ -1,8 +1,11 @@
 ---
 description: Triage Intune device compliance — why a device shows non-compliant, which policy/setting failed, and how to remediate. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /intune-compliance
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** "Non-compliant" almost always traces to a **specific failed setting** in a specific policy. Open the device → Compliance, read which setting is red, fix that — don't guess. Non-compliant + Conditional Access "require compliant device" = the user gets blocked, so this is often urgent.
 
@@ -11,6 +14,8 @@ description: Triage Intune device compliance — why a device shows non-complian
 - When did it flip? (Recent policy change vs. device drift.)
 
 ## Step-by-step fix (portal first — intune.microsoft.com)
+
+> **PREVIEW ONLY [intune-compliance-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 1. Devices → All devices → `[DEVICE_NAME]` → **Device compliance** → expand the failing policy → read the **red setting**.
 2. Common failures → fix:
    - **BitLocker/encryption not on** → enable BitLocker (Windows) / device encryption.

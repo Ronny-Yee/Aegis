@@ -111,7 +111,7 @@ current conversation.
 
 ## Pre-Commit Security Scanning
 
-The pre-commit hook (`scripts/pre-commit-check.js`) enforces three control classes:
+The pre-commit hook (`scripts/pre-commit-check.js`) reports six pattern-based control classes. Normal hook mode scans staged add/copy/modify/rename/typechange UTF-8 text; `--all` scans tracked plus nonignored untracked working-tree text.
 
 ### Class 1 — PII Scan (BLOCK)
 
@@ -122,8 +122,7 @@ Real email addresses (non-placeholder)
 Phone number patterns: \d{3}[-.\s]\d{3}[-.\s]\d{4}
 ```
 
-Lines containing `[PLACEHOLDER]` markers are skipped — the scanner recognizes safe placeholder
-usage and does not flag it.
+Only the exact canonical PII tokens `[USER@DOMAIN.COM]` and `[PHONE_NUMBER]` are masked for their corresponding detectors. Bracketed metadata never exempts the rest of a line, and other placeholder conformance remains a repository-structure and semantic-review responsibility.
 
 **Action:** Blocks the commit. Operator must replace with a placeholder before re-staging.
 
@@ -138,11 +137,19 @@ Generic API token pattern (32+ char alphanum : 27+ char)
 **Action:** Blocks the commit. Credential must be moved to an environment variable or secrets
 manager before proceeding.
 
-### Class 3 — Dangerous Cmdlet Scan (WARN)
+### Class 3 — Tenant/org Literal Scan (BLOCK)
+
+Configured tenant and organization literals are loaded at runtime from environment or ignored local configuration. Matches are blocked and redacted from scanner output.
+
+### Class 4 — Operational Reconnaissance Scan (BLOCK)
+
+Privileged absolute paths, local user-profile paths, and non-placeholder SSH account targets are blocked. Findings print only safe path/category/line metadata.
+
+### Class 5 — Dangerous Operational Sink Scan (WARN)
 
 Dangerous PowerShell cmdlets and git operations in `.ps1` and `.md` files:
 
-```
+```text
 Remove-Item -Recurse -Force
 Remove-Mg* (Graph API deletion)
 Remove-Mailbox, Clear-Mailbox, Clear-MobileDevice
@@ -156,9 +163,13 @@ git push --force / git push -f
 git reset --hard
 ```
 
-**Action:** Warns but does not block. The operator reviews flagged lines and confirms intent.
-Pure documentation files (CLAUDE.md, lessons.md, README.md) are excluded from this scan —
-they legitimately reference dangerous cmdlets as reference material.
+The warning set also covers state-changing Jira/memory/audit client invocations, SCP/SFTP, Git-hook writes, and dynamic SSH remote-command invocation.
+
+**Action:** Warns but does not block. The operator reviews every flagged line and confirms intent. Documentation is scanned too; only the narrow prompt-injection detector has documented security-reference exclusions.
+
+### Class 6 — Prompt-Injection Marker Scan (WARN)
+
+Common instruction-override strings warn outside the scanner's narrow security-document allowlist. This is a review aid, not a claim that pattern matching fully detects prompt injection.
 
 ---
 

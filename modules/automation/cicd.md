@@ -74,15 +74,9 @@ Every commit triggers `scripts/pre-commit-check.js` automatically (configured in
 
 See [pre_commit_hooks.md](pre_commit_hooks.md) for full documentation.
 
-### Bypassing the Hook (Only If You Know Why)
+### Resolving a Hook Finding
 
-```bash
-# Skip the pre-commit hook — use only for intentional false positives
-git commit --no-verify -m "chore: update example with placeholder"
-```
-
-⚠️ Never use `--no-verify` to skip a BLOCK on a real credential or PII value.
-Fix the issue first, then commit.
+Do not bypass the hook. Replace real values with canonical placeholders, add the required command-local safety gate for intentional operational examples, or narrow a proven false-positive matcher with a regression test. Then re-stage and rerun the scanner. Reducing scanner coverage is a security-control change and requires a separate, exact operator decision.
 
 ---
 
@@ -94,9 +88,8 @@ Run the scanner without committing:
 # Scan all staged files
 node scripts/pre-commit-check.js
 
-# Stage a file and scan it
-git add scripts/my-script.ps1
-node scripts/pre-commit-check.js
+# Exercise known safe and blocked fixtures without modifying the index
+node --test scripts/pre-commit-check.test.js
 ```
 
 ---
@@ -131,6 +124,8 @@ ITOps/
 ---
 
 ## Adding a New Slash Command
+
+> **PREVIEW ONLY [cicd-command-file-create]:** The sequence below is a repository-maintenance reference. It cannot create, stage, commit, or push a file; resolve the exact path/content and obtain scoped local-edit authorization first.
 
 1. Create `.claude/commands/[command-name].md`
 2. Structure:

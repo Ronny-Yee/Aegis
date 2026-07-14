@@ -150,15 +150,15 @@ human oversight.
 
 ### Destructive Action Gate (immutable)
 
-All operations in these categories require explicit operator confirmation (`"yes, proceed"`)
-before the agent provides the final actionable output:
+All operations in these categories require the action-local, case-sensitive phrase that
+names the resolved target and effect. Generic approval such as `yes` or `proceed` is invalid:
 
 | Category | Examples |
 |----------|---------|
 | Account operations | Disable, delete, block sign-in |
 | License operations | Remove licenses from users |
 | Device operations | Full Wipe, Retire |
-| Session operations | Revoke all sessions |
+| Session operations | Request Entra refresh-token/browser-cookie revocation; verify after propagation |
 | Bulk operations | Any operation affecting >10 users/devices |
 | Git operations | `git push --force`, `git reset --hard` |
 | Code execution | `Invoke-Expression`, `IEX` |

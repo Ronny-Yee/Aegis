@@ -3,22 +3,22 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const { TextDecoder } = require('util');
 const test = require('node:test');
 
 const ROOT = path.resolve(__dirname, '..');
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
-function trackedFiles() {
-  return execFileSync('git', ['ls-files', '-z'], { cwd: ROOT })
+function workingTreeFiles() {
+  return execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], { cwd: ROOT })
     .toString('utf8')
     .split('\0')
     .filter(Boolean);
 }
 
 function textFiles() {
-  return trackedFiles();
+  return workingTreeFiles();
 }
 
 test('all command files have valid description frontmatter', () => {
@@ -51,7 +51,22 @@ test('the bundled Claude plugin uses the canonical manifest and resolvable comma
   }
 });
 
-test('tracked JSON parses and every tracked file is strict UTF-8 text', () => {
+test('fresh release staging includes the public password-reset runbook without weakening credential ignores', () => {
+  const ignored = file => spawnSync(
+    'git',
+    ['check-ignore', '--quiet', '--no-index', '--', file],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  const publicRunbook = ignored('.claude/commands/password-reset.md');
+  const unrelatedPasswordArtifact = ignored('local-password-notes.txt');
+
+  assert.strictEqual(publicRunbook.error, undefined);
+  assert.strictEqual(publicRunbook.status, 1, 'the canonical public runbook must not be ignored');
+  assert.strictEqual(unrelatedPasswordArtifact.error, undefined);
+  assert.strictEqual(unrelatedPasswordArtifact.status, 0, 'unrelated password-named artifacts must stay ignored');
+});
+
+test('working-tree JSON parses and every tracked or non-ignored file is strict UTF-8 text', () => {
   const encodingFailures = [];
   const jsonFailures = [];
   for (const file of textFiles()) {
@@ -77,7 +92,7 @@ test('tracked JSON parses and every tracked file is strict UTF-8 text', () => {
 
 test('Markdown fences are balanced', () => {
   const failures = [];
-  for (const file of trackedFiles().filter(file => file.endsWith('.md'))) {
+  for (const file of workingTreeFiles().filter(file => file.endsWith('.md'))) {
     const content = fs.readFileSync(path.join(ROOT, file), 'utf8');
     const fences = content.split(/\r?\n/).filter(line => /^\s*```/.test(line)).length;
     if (fences % 2 !== 0) failures.push(file);
@@ -85,7 +100,7 @@ test('Markdown fences are balanced', () => {
   assert.deepStrictEqual(failures, [], `Unbalanced Markdown fences: ${failures.join(', ')}`);
 });
 
-test('tracked text files end with a newline and have no UTF-8 BOM', () => {
+test('working-tree text files end with a newline and have no UTF-8 BOM', () => {
   const missingNewline = [];
   const bom = [];
   for (const file of textFiles()) {
@@ -95,4 +110,15 @@ test('tracked text files end with a newline and have no UTF-8 BOM', () => {
   }
   assert.deepStrictEqual(missingNewline, [], `Missing EOF newline: ${missingNewline.join(', ')}`);
   assert.deepStrictEqual(bom, [], `UTF-8 BOM found: ${bom.join(', ')}`);
+});
+
+test('legacy parallel tenant and operator placeholders are absent', () => {
+  const failures = [];
+  const legacyToken = /\[YOUR_[A-Z0-9_*]+\]|\[[A-Za-z0-9._%+-]+@YOUR_[A-Z0-9_]+\]/g;
+  for (const file of textFiles()) {
+    const content = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    const matches = content.match(legacyToken);
+    if (matches) failures.push(`${file}: ${matches.join(', ')}`);
+  }
+  assert.deepStrictEqual(failures, [], `Legacy parallel placeholders found: ${failures.join('; ')}`);
 });

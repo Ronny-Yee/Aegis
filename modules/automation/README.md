@@ -24,23 +24,22 @@ damage in seconds if written carelessly. These principles govern every script in
    then run for real.
 
 2. **Dry run by default** — scripts that affect >10 objects default to `$DryRun = $true`.
-   The operator must explicitly set `$DryRun = $false` to execute.
+   Setting `$DryRun = $false` is only a mode selection, never authorization. A live run also needs an independently predicted count, immutable reviewed target set, off-repo pre-state checkpoint, and action-specific exact confirmation.
 
-3. **Audit trail** — every bulk operation logs to a timestamped file before and after.
-   If something goes wrong, there is a record of what changed.
+3. **Audit trail** — every bulk operation uses collision-resistant, no-clobber records outside the repository under the approved local application-data path. Identity/tenant state and operation logs are never written into tracked paths.
 
-4. **Rollback plan** — scripts that delete or disable export a rollback script before
-   executing. If the operation needs to be reversed, the rollback script re-enables
-   or re-assigns exactly what was changed.
+4. **Recovery plan** — reversible disable/assignment changes capture exact immutable pre-state and a separately reviewed inverse before execution. Irreversible deletion/wipe has no rollback script: capture evidence and verified backup/retention facts, prefer a reversible sibling, and require the strongest target-bound gate.
 
 5. **Pre-commit scanning** — the pre-commit hook catches PII, credentials, and dangerous
    cmdlets before they reach the repo. See [pre_commit_hooks.md](pre_commit_hooks.md).
 
 ## Quick Reference — Modules Required
 
-| Task | Module | Install |
-|------|--------|---------|
-| Entra, Intune, M365 users | Microsoft.Graph | `Install-Module Microsoft.Graph -Scope CurrentUser` |
-| Exchange mailboxes, mail flow | ExchangeOnlineManagement | `Install-Module ExchangeOnlineManagement -Scope CurrentUser` |
-| On-prem Active Directory | ActiveDirectory (RSAT) | Windows feature, not a PS module |
-| AD Connect | ADSync | Pre-installed on AD Connect server |
+The table names required modules but contains no runnable install command. Use the listed canonical route, which must show the exact module and CurrentUser scope and require its concrete case-sensitive phrase; any other response stops without installing.
+
+| Task | Module | Canonical route |
+|------|--------|-----------------|
+| Entra, Intune, M365 users | Microsoft.Graph | Gated local install in `/conditional-access` |
+| Exchange mailboxes, mail flow | ExchangeOnlineManagement | Gated local install in `/email-quarantine` |
+| On-prem Active Directory | ActiveDirectory (RSAT) | Windows feature; separate operator-owned installation |
+| AD Connect | ADSync | Pre-installed on AD Connect server; execution routes to `/ad-connect` |

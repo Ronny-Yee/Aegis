@@ -3,6 +3,10 @@
 Three anonymized scenarios from production use, demonstrating the agent's security controls,
 workflow orchestration, and self-improvement loop.
 
+## Execution boundary
+
+These scenarios are planning/reference material only. They cannot authorize or perform a state change. Any intended administrative action must move to the exact canonical command named below, where the resolved target and action-specific exact confirmation are established immediately before that one action. Generic `yes`, `proceed`, or approval of a plan is not execution approval.
+
 ---
 
 ## Example 1: Pre-Commit Hook Catches PII Leak
@@ -14,8 +18,8 @@ before the leak reached the repository.
 ### The Commit Attempt
 
 ```bash
-$ git add CLAUDE.md
-$ git commit -m "chore: sanitize CLAUDE.md — replace org-specific details"
+# PREVIEW ONLY [example-commit-attempt-stage]: git add CLAUDE.md
+# PREVIEW ONLY [example-commit-attempt-create]: git commit -m "chore: sanitize CLAUDE.md — replace org-specific details"
 ```
 
 ### The Scanner Output
@@ -33,26 +37,26 @@ $ git commit -m "chore: sanitize CLAUDE.md — replace org-specific details"
 
 🔴 COMMIT BLOCKED — 2 critical issue(s) found.
    Fix the issues above, then re-stage and commit.
-   To bypass (only if you are certain): git commit --no-verify
+   Do not bypass the hook; rerun it after the source is sanitized.
 ```
 
 ### The Fix
 
-The operator replaced all instances of the real domain with the `[YOUR_DOMAIN]` placeholder:
+The operator replaced all instances of the real domain with the canonical `[@Aegion_DOMAIN]` placeholder:
 
 ```diff
 - User logon name: [first.last] → domain: @example-corp.org
-+ User logon name: [first.last] → domain: @[YOUR_DOMAIN]
++ User logon name: [FIRST_NAME].[LAST_NAME] → domain: @[@Aegion_DOMAIN]
 
 - Username format: [FIRST.LAST]@example-corp.org
-+ Username format: [FIRST.LAST]@[YOUR_DOMAIN]
++ Username format: [FIRST_NAME].[LAST_NAME]@[@Aegion_DOMAIN]
 ```
 
 ### The Successful Re-Commit
 
 ```bash
-$ git add CLAUDE.md
-$ git commit -m "chore: sanitize CLAUDE.md — replace org-specific details with placeholders"
+# PREVIEW ONLY [example-recommit-stage]: git add CLAUDE.md
+# PREVIEW ONLY [example-recommit-create]: git commit -m "chore: sanitize CLAUDE.md — replace org-specific details with placeholders"
 
 pre-commit-check: ✓ Clean — no issues found.
 [main abc1234] chore: sanitize CLAUDE.md — replace org-specific details with placeholders
@@ -75,7 +79,7 @@ multiple passes before the scanner returned clean.
 ## Example 2: Plan Mode — Multi-System Onboarding
 
 **Scenario:** A new hire onboarding request came in. The task touches 5+ systems (AD, Entra,
-M365, Intune, VoIP), so the agent automatically enters plan mode before executing anything.
+M365, Intune, VoIP), so the agent automatically enters plan mode and keeps execution separate.
 
 ### The Request
 
@@ -88,19 +92,21 @@ groups + MFA + Intune + VoIP + SharePoint = 8+ distinct system boundaries) and e
 plan mode per the workflow orchestration rules:
 
 > **Plan mode triggered** — onboarding touches 8 systems. Writing plan for review before
-> execution.
+> routing any action to its canonical gated command.
 
 ### The 13-Step Plan
+
+> **PREVIEW ONLY [examples-onboarding-plan]:** This plan is non-executable. Route onboarding to `/new-user`, connector sync to `/ad-connect`, and any other standalone action to the canonical command named by `/new-user`.
 
 ```markdown
 ## Onboarding Plan — [FIRST_NAME] [LAST_NAME]
 
 1. ☐ Create user in on-prem AD (ADUC) — OU: Staff > [DEPARTMENT]
-   - UPN: [first.last]@[YOUR_DOMAIN]
+   - UPN: [FIRST_NAME].[LAST_NAME]@[@Aegion_DOMAIN]
    - Temp password, force change at next logon
 
 2. ☐ Force Entra Connect delta sync
-   - Verify: Start-ADSyncSyncCycle -PolicyType Delta
+   - Route: `/ad-connect` (this example intentionally contains no sync command)
 
 3. ☐ Verify user appears in M365 admin center
    - Portal: admin.microsoft.com → Users → Active users
@@ -134,12 +140,12 @@ plan mode per the workflow orchestration rules:
 11. ☐ Verify Teams membership
     - Auto-added via group, or manual add
 
-12. ☐ Send welcome email with temp password + IT onboarding doc link
-    - ⚠️ Do NOT include password in email body — use secure channel
+12. ☐ Send welcome email with the IT onboarding doc link
+    - Hand off the temporary password separately through an approved secure channel
 
 13. ☐ Log all steps to Jira ticket [JIRA-###]
 
-### Verification Gates (run after execution)
+### Verification Gates (run only after separately gated execution)
 - [ ] `Get-MgUser -UserId "[UPN]"` returns valid user
 - [ ] License shows M365 Business Premium assigned
 - [ ] Group membership includes [DEPARTMENT] security group
@@ -149,25 +155,24 @@ plan mode per the workflow orchestration rules:
 
 ### Operator Confirmation
 
-> Operator: "Looks good. Proceed."
+> Operator: "Plan reviewed. This review does not authorize state changes; route each action to its canonical command."
 
 *(For plans with irreversible steps, the operator may paste this to Nova for independent
 review before confirming — the lightweight supervision pattern described in the architecture.)*
 
-### Execution with Portal Steps
+### Canonical execution routes
 
-The agent executes each step, leading with portal navigation (Core Behavior Rule #2):
+This example does not execute the plan or provide approval phrases. An operator starts `/new-user`; any connector sync is separately routed to `/ad-connect`.
+
+> **PREVIEW ONLY [examples-onboarding-portal]:** The navigation below illustrates the plan's intent only. It is not an executable procedure and cannot substitute for `/new-user` or `/ad-connect` gates.
 
 > **Step 1 — Create AD User**
 >
-> Open **Active Directory Users & Computers** → navigate to `[YOUR_ORG] > Staff > [DEPARTMENT]`
-> → right-click → New → User → fill in [FIRST_NAME] [LAST_NAME], UPN [first.last]@[YOUR_DOMAIN]
-> → set temp password → check "User must change password at next logon" → Finish
+> Route the resolved identity and OU to `/new-user`; do not create the account from this document.
 >
 > **Step 2 — Force Sync**
 >
-> On the AD Connect server, run: `Start-ADSyncSyncCycle -PolicyType Delta`
-> Give it 2-3 minutes, then check Step 3.
+> Route the reviewed connector target to `/ad-connect`; this document intentionally supplies no command.
 
 *(Steps 3-13 follow the same portal-first format)*
 
@@ -259,8 +264,8 @@ proceeds with the legitimate request.
 > We'll review against our firewall policy and get back to you within 48 hours.
 >
 > Best,
-> [YOUR_NAME]
-> IT Department, [YOUR_ORG]
+> [ADMIN_NAME]
+> IT Department, [@Aegion]
 >
 > ---
 

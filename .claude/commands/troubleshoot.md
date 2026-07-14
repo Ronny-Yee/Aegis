@@ -36,6 +36,7 @@ description: Master IT troubleshooting decision tree — scope → outage check 
 | New / departing staff | `/onboard`, `/offboard` |
 
 ### 5. Test the most-likely fix first (cheap → expensive)
+> **PREVIEW ONLY [troubleshoot-remediation-ladder]:** Cache clearing, credential clearing, updates, re-registration, and reconfiguration are distinct changes. This router cannot execute them; move only the selected action to its specialist command with an exact target and local gate.
 Restart/sign-out-in → clear cache/credentials → update → re-register → reconfigure. Change **one variable at a time**.
 
 ### 6. Verify (prove it, don't assume)

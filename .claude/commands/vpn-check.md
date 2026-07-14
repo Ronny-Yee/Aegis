@@ -1,8 +1,11 @@
 ---
 description: Systematic VPN troubleshooting decision tree — Meraki site-to-site + client VPN — symptom → isolation → ranked causes → fix → escalation. Meraki dashboard first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /vpn-check
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Split it: **site-to-site (S2S)** vs **client VPN**. Then "tunnel down" vs "tunnel up but no traffic" — they have different causes. Context: the org is migrating `[@Aegion_WAN]` (P2P fiber) → Meraki MX-to-MX S2S; `[@Aegion_REMOTE_ACCESS]` still on the old link.
 
@@ -22,7 +25,8 @@ description: Systematic VPN troubleshooting decision tree — Meraki site-to-sit
 
 ### Client VPN
 1. **Auth** — wrong creds / account disabled / MFA (if RADIUS). Check Event log / Meraki client VPN auth.
-2. **Connects, no internet** — **split vs full tunnel**: split = only org subnets route over VPN (expected); full = all traffic. Set per requirement.
+2. **Connects, no internet** — **split vs full tunnel**: split = only org subnets route over VPN (expected); full = all traffic.
+   > **PREVIEW ONLY [vpn-client-routing-mode]:** Changing split/full-tunnel routing changes client traffic paths and is not authorized here. Route the exact Meraki network, client-VPN profile, affected routes/users, pre-state, and rollback through a separately reviewed network change.
 3. **Connects, can't reach internal** — subnet/route + MX firewall + DNS over VPN.
 4. **Can't connect at all** — client VPN enabled on MX? shared secret correct? UDP 500/4500 reachable from the client's network?
 

@@ -7,8 +7,8 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R0 for remote reads; R1 for the local audit-log append.
-- **Access:** credential-sensitive remote read and local write.
+- **Risk level:** R0 for remote reads; automatic local logging is disabled.
+- **Access:** credential-sensitive remote read with no local write.
 - **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
@@ -65,6 +65,6 @@ $ssh = "C:\Windows\System32\OpenSSH\ssh.exe"
 - **holdings.yml missing/moved:** report the exact path tried; don't guess holdings.
 - **SSH auth error:** key must be in the Windows ssh-agent (see `/hermes-status`).
 
-## Logging
-Append to the repository-relative `.aegis-state/hermes-escalation-log.md`:
+## Proposed audit line
+Automatic append is **PREVIEW ONLY**. Return this hash-only/sanitized line without writing `.aegis-state/hermes-escalation-log.md`:
 `[YYYY-MM-DD HH:MM:SS] /portfolio-status <scope> → <OK|NO-CACHE|UNREACHABLE>`

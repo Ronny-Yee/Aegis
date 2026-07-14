@@ -1,5 +1,5 @@
 ---
-description: Create a Jira Service Management ticket from an Aegis work-up — turns a ticket's summary + resolution into a real JSM request. Dry-run first; placeholders only.
+description: Create one Jira Service Management request through a dry-run and exact payload-bound confirmation. Placeholders only.
 disable-model-invocation: true
 ---
 
@@ -7,58 +7,69 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R0 in dry-run; R1 when `--execute` creates one request.
-- **Access:** remote write only with an explicit bare `--execute` flag.
-- **Credential-sensitive:** yes during execution; Jira credentials remain environment-only.
+- **Risk level:** R0 for preview; R1 when one request is created.
+- **Access:** remote write only after both bare `--execute` and an exact `--confirm VALUE` bind the destination and full payload.
+- **Credential-sensitive:** yes during execution; Jira credentials remain environment-only and are not loaded before the confirmation matches.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does:** Takes the ticket you just worked and creates a real request in Jira Service Management (space **DevOps / Get IT Help**) via `scripts/jira-client.js`. Aegis already ends every ticket with a Jira-ready note — this closes the loop without leaving the terminal.
+## Execution boundary
 
-**Scope:** JSM Cloud, the service-desk request API (portal-visible request types), not raw Jira issues. Identities stay placeholders in anything Aegis writes; the operator substitutes real values at run time.
+The first invocation is always an inert preview. It serializes the exact payload, hashes that serialization with full SHA-256, and prints the only confirmation accepted for that destination and payload. Missing, declined, stale, case-changed, whitespace-changed, or otherwise incorrect confirmation makes no network request and loads no credentials.
 
-## Before you run (one-time setup)
-Set these in your shell — **never commit a token** (the pre-commit scanner blocks it):
-- `JIRA_SITE` = your-domain.atlassian.net
-- `JIRA_EMAIL` = the API-token owner's email
-- `JIRA_API_TOKEN` = from id.atlassian.com → Security → API tokens
-- `JIRA_SERVICE_DESK_ID` and `JIRA_REQUEST_TYPE_ID` (defaults) — discover them once with the list commands below.
+This command uses `scripts/jira-client.js` and the Jira Service Management customer-request API. It creates a portal request, not a raw Jira issue.
 
-## Step-by-step
+## One-time setup
 
-1. **Discover ids (first time only):**
-   ```bash
-   node scripts/jira-client.js list-desks --execute
-   node scripts/jira-client.js list-types --service-desk [DESK_ID] --execute
-   ```
-   Put the chosen ids in `JIRA_SERVICE_DESK_ID` / `JIRA_REQUEST_TYPE_ID` so you can omit them later.
+Set these values in the shell. Never put the token in a file or commit.
 
-2. **Dry run (default — shows the exact payload, calls nothing):**
-   ```bash
-   node scripts/jira-client.js create --summary "[ONE-LINE SUMMARY]" --description "[2-3 SENTENCE DESCRIPTION — placeholders for any identity]"
-   ```
+- `JIRA_SITE`: a bare `<tenant>.atlassian.net` hostname. Schemes, paths, ports, userinfo, trailing dots, IP addresses, and suffix variants are rejected.
+- `JIRA_EMAIL`: the API-token owner's email.
+- `JIRA_API_TOKEN`: the Atlassian API token.
+- `JIRA_SERVICE_DESK_ID` and `JIRA_REQUEST_TYPE_ID`: optional positive numeric defaults.
 
-3. **Create it** — add `--execute` once the payload looks right:
-   ```bash
-   node scripts/jira-client.js create --summary "..." --description "..." --execute
-   ```
-   On success it prints the issue key (e.g. `HELP-123`) and portal link.
+The read-only discovery calls are:
 
-   `--execute` is a bare boolean flag. Forms such as `--execute false` and `--execute=false` are rejected rather than treated as authorization.
+```bash
+node scripts/jira-client.js list-desks --execute
+node scripts/jira-client.js list-types --service-desk [DESK_ID] --execute
+```
 
-> **On behalf of a reporter:** add `--on-behalf-of [EMAIL_OR_ACCOUNTID]` only with a real, operator-supplied value. Never invent one. Aegis keeps placeholders in the text it drafts.
+## Create workflow
 
-## ⚠️ Risk warning
-- A created request is **visible to the reporter** and can trigger JSM automations/SLAs. The dry run is the safety net — read the payload before `--execute`.
-- The API token is a credential: shell env only, never a file, never a commit. If one is ever pasted into the repo, treat it as leaked — **revoke first** (rotation neutralizes; a later purge does not).
+1. Preview the exact request. This makes no API call and does not read the email or token:
 
-## ✅ Verification checklist
-- Dry run printed the intended `serviceDeskId` / `requestTypeId` / summary / description.
-- After `--execute`: issue key returned; open the portal link and confirm summary, request type, and (if used) reporter are correct.
-- Description contains **no real identities** unless the operator deliberately supplied sanitized real values.
+```bash
+node scripts/jira-client.js create --summary "[ONE-LINE SUMMARY]" --description "[2-3 SENTENCE DESCRIPTION]"
+```
 
-## JSM portal navigation tips (2026)
-- **Edit the request form:** open a work item → **Request form** tab → drag the field from the right panel **onto the form canvas**. Fields not on the canvas don't show on the portal form even if they exist on the issue.
-- **Department field:** it's a **custom dropdown**, not a system field — manage its options where the custom field is defined, not in the request type (working fix, March 2026).
+The client prints the exact serialized JSON plus a phrase with this shape:
 
-## 📝 Jira-ready note
-Paste the worked ticket's existing **Jira-ready note** as the `--description`. After creation, log the issue key back in the ticket thread so the work-up and the JSM request are linked.
+```text
+CREATE JSM REQUEST ON <tenant>.atlassian.net DESK <numeric-id> TYPE <numeric-id> PAYLOAD SHA256 <64-hex-digest>
+```
+
+2. Review the site, desk, request type, summary, description, and optional reporter. Copy the entire value printed after `Required confirmation:` without editing it.
+
+3. Re-run the identical payload with both controls. In this example, `CONFIRMATION` means the complete phrase copied from step 1:
+
+```bash
+node scripts/jira-client.js create --summary "[ONE-LINE SUMMARY]" --description "[2-3 SENTENCE DESCRIPTION]" --execute --confirm "$CONFIRMATION"
+```
+
+Changing the site, desk, request type, summary, description, or reporter changes the SHA-256 phrase and invalidates the earlier confirmation.
+
+To create on behalf of a reporter, add `--on-behalf-of [USER@DOMAIN.COM]` to both invocations. Use only the operator-supplied reporter value; never invent one.
+
+## Failure behavior
+
+- No `--execute`: preview only, zero network.
+- Missing or wrong `--confirm VALUE`: refusal, zero credential reads and zero network.
+- Invalid `JIRA_SITE`: refusal before credentials or network.
+- HTTP failure before Jira accepts the request: nonzero exit; response body is withheld.
+- A write was attempted but the result could not be established: exit 3 and `UNKNOWN/possibly changed`. Inspect Jira before retrying; the client never retries a write automatically.
+
+## Verification
+
+The client accepts the HTTP 201 receipt only when it contains a valid issue key and immutable ID, then independently GETs that request. Success requires the same key/ID plus the approved service desk, request type, summary, and description. This does not prove downstream automation or notifications completed; open the exact request in JSM and verify its reporter and resulting automation state before reporting the wider workflow complete.
+
+Paste the ticket's existing Jira-ready note into `--description`. After verified creation, record the returned `[JIRA-###]` key in the local ticket thread.

@@ -1,6 +1,10 @@
 # Plan-Mode Templates — High-Risk Surfaces
 
-When a change crosses 3+ system boundaries or touches a security gate, Aegis writes the plan *first*, gets explicit confirmation, then executes. These are the templates for the four highest-risk surfaces. Every plan ends with a Nova review hand-off because the supervisor pattern catches the gap a single agent doesn't see.
+When a change crosses 3+ system boundaries or touches a security gate, Aegis writes the plan *first* and keeps execution separate. These are the templates for the four highest-risk surfaces. Every plan ends with a Nova review hand-off because the supervisor pattern catches the gap a single agent doesn't see.
+
+## Execution boundary
+
+These templates are planning/reference only. Plan review, stakeholder approval, or generic `yes`/`proceed` never authorizes execution. Each intended change must be routed to the exact canonical command named below, which must independently show the resolved target, effect, scope, reversibility, checkpoint/rollback, and an action-specific exact confirmation immediately before its one action.
 
 ---
 
@@ -9,6 +13,9 @@ When a change crosses 3+ system boundaries or touches a security gate, Aegis wri
 **When to use:** any new CA policy, scope expansion, or condition change. CA policy errors lock everyone out instantly.
 
 ### Plan
+
+> **PREVIEW ONLY [plan-ca-policy]:** Route each Conditional Access mutation to `/conditional-access`. This template cannot create, enable, disable, or roll back a policy.
+
 ```
 Step 1 — Snapshot current state
   - Entra → Protection → Conditional Access → export current policy JSON
@@ -52,11 +59,14 @@ Cannot mark complete until: Report-only ran 24h with no surprise blocks · break
 **When to use:** removing or reassigning licenses across more than 10 users. Mistakes here are mailbox-deletion-scale damage.
 
 ### Plan
+
+> **PREVIEW ONLY [plan-mass-license]:** Route mailbox conversion to `/shared-mailbox` and each license mutation to `/license-audit`. This template cannot authorize either action.
+
 ```
 Step 1 — Generate the target list
   - Source: HR offboarding sheet / department-restructure list / etc.
-  - Build a CSV: UPN, current SKU, target action (remove / change SKU / etc.)
-  - Two-pass review: yourself + one other person (or paste to Nova for verification)
+  - Build the identity-bearing CSV outside the repository under the approved local data location: UPN, immutable user ID, current SKU/service-plan state, target action
+  - Two-pass human review of that local file. Never paste UPNs or the identity list into Nova or another model/session; send only a sanitized placeholder sample plus count and cryptographic hash if plan review is needed
 
 Step 2 — Spot-check 3 random rows
   - For each, confirm in M365 admin that the user's current state matches the CSV
@@ -64,12 +74,14 @@ Step 2 — Spot-check 3 random rows
 
 Step 3 — Pre-flight: convert mailboxes if needed
   - For removals, ensure every affected mailbox is already converted to shared
-  - Run the conversion as a separate pre-step; verify before proceeding
+  - Run the conversion as a separate gated action; verify before the license step
 
 Step 4 — Execute with logging
-  - Use Set-MgUserLicense in a loop, write per-user result to a CSV
+  - Re-read the staged count and require the operator to type the generated phrase `CHANGE LICENSES FOR <displayed-count> REVIEWED USERS`
+  - Empty, generic, or mismatched input stops without executing
+  - Invoke `/license-audit` for one reviewed UPN at a time; keep any identity-bearing success log outside the repository under the approved local data location
   - Sleep 200ms between calls to avoid throttling
-  - On any failure: log and continue (do NOT abort the whole batch — one stuck user shouldn't block the other 49)
+  - On any failure: stop immediately, report the exact partial state, and use the success log as the rollback worklist
 
 Step 5 — Post-flight reconciliation
   - Re-query each UPN's licenses, compare to expected target state
@@ -92,6 +104,9 @@ Every UPN's post-state matches the CSV target · the result CSV is committed to 
 **When to use:** migrating a site from one VPN topology to another. Done wrong, the site is offline until someone drives there.
 
 ### Plan
+
+> **PREVIEW ONLY [plan-vpn-cutover]:** Route VPN configuration and cutover to `/meraki-site-vpn`. This template cannot disable or enable a topology.
+
 ```
 Step 1 — Window scheduling
   - After-hours window, both sides
@@ -139,6 +154,9 @@ Dashboard shows both peers Connected · all cross-site tests pass · on-site con
 **When to use:** user's machine prompts for BitLocker recovery key and you need to retrieve it from Intune/Entra. Sensitive because the key unlocks the entire disk.
 
 ### Plan
+
+> **PREVIEW ONLY [plan-bitlocker-key]:** Use `/intune-compliance` for read-only device/compliance verification. No canonical recovery-key disclosure command exists in this repository, so retrieval must remain operator-owned under an approved procedure; this template cannot disclose a key.
+
 ```
 Step 1 — Identity verification (critical)
   - Callback the user on a known good number (not the one in their ticket)

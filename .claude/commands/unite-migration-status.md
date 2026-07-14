@@ -1,8 +1,11 @@
 ---
 description: Live tracker for the [@Aegion_VOIP] VoIP migration — status by site, pending tasks, vendor coordination, go-live checklist, and rollback plan. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /unite-migration-status
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** The [@Aegion_VOIP] migration is partially complete — Main office is live, [@Aegion_SITE_2] and [@Aegion_SITE_3] are actively in progress, and [@Aegion_SITE_4] status is pending confirmation. The [@Aegion_ALARM] landline-to-internet cutover is a hard dependency at each remaining site and must be coordinated before [@Aegion_ISP] disconnects the landline.
 
@@ -20,6 +23,8 @@ description: Live tracker for the [@Aegion_VOIP] VoIP migration — status by si
 ---
 
 ## Pending tasks per site
+
+> **PREVIEW ONLY [voip-migration-tasks]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 ### [@Aegion_SITE_2]
 - [ ] Cabling complete ([@Aegion_NETPARTNER] to confirm sign-off)
@@ -68,6 +73,8 @@ description: Live tracker for the [@Aegion_VOIP] VoIP migration — status by si
 
 ## Go-live checklist (per site)
 
+> **PREVIEW ONLY [voip-migration-go-live]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 Run this checklist at each site on cutover day before signing off:
 
 - [ ] All desk phones show **Registered** in [@Aegion_VOIP] admin portal
@@ -86,6 +93,8 @@ Run this checklist at each site on cutover day before signing off:
 ---
 
 ## Rollback plan
+
+> **PREVIEW ONLY [voip-migration-rollback]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 If cutover fails and phones are non-functional:
 

@@ -34,6 +34,7 @@ Example:
 >
 > Me: yes but crashes
 > Aegis:
+> **PREVIEW ONLY [field-outlook-addins]:** Disabling COM add-ins and restarting Outlook changes local application state. This transcript is inert; route the exact device/profile and captured add-in list through `/outlook-issue` before any change.
 > STEP 3: File → Options → Add-ins → Manage COM → Go → uncheck all → OK → restart Outlook
 > → works?
 

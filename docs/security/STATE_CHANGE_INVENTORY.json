@@ -1,0 +1,5915 @@
+{
+  "schemaVersion": 1,
+  "executionClassification": {
+    "gated": "State-changing or disclosure-capable; exact authorization is required before the documented sink.",
+    "preview": "Read-only as authored; mutation vocabulary is inert and describes a separately prohibited or review-routed effect."
+  },
+  "scope": {
+    "discoveredMarkdown": "Tracked and nonignored untracked Markdown safety/preview markers plus recognized PowerShell, shell/native, and portal mutation grammar.",
+    "clientBoundaries": "State-changing or disclosure-capable Jira, memory, security-audit, and Hermes implementations outside Markdown fence discovery.",
+    "limitation": "Novel syntax and prose still require semantic review and grammar extension."
+  },
+  "directR1": [],
+  "examples": [
+    {
+      "id": "ad-connect-delta",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "ad-connect-delta-portal",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "ad-connect-initial",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "ad-connect-initial-portal",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ad-connect-object-remediation",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ad-connect-ou-scope",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ad-connect-password-hash",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Invoke-ADSyncCSObjectPasswordHashSync",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related"
+      ]
+    },
+    {
+      "id": "ad-connect-password-hash-portal",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ad-connect-scope-review",
+      "file": ".claude/commands/ad-connect.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "aegis-update-local-files",
+      "file": ".claude/commands/aegis-update.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "alpha-signal-cache-refresh",
+      "file": ".claude/commands/alpha-signal.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "automation-bulk-license",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Set-MgUserLicense",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "automation-bulk-license-checkpoint-write",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "automation-compliance-assignment",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-MgDeviceManagementDeviceCompliancePolicyAssignment",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "automation-compliance-checkpoint-write",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "automation-group-members-report",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Export-Csv",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "automation-inactive-users-report",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Export-Csv",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "automation-no-mfa-report",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Export-Csv",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "automation-token-revoke",
+      "file": "modules/automation/powershell/examples.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Revoke-MgUserSignInSession",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-break-glass",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-compliant-device",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-country",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-create",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:create",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-legacy",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-mfa-admin",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ca-policy-mfa-all",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "cicd-command-file-create",
+      "file": "modules/automation/cicd.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "compliance-admin-role-removal",
+      "file": "modules/security/compliance_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "compliance-guest-report-write",
+      "file": "modules/security/compliance_checks.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Export-Csv",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "compliance-stale-guest-removal",
+      "file": "modules/security/compliance_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "conditional-access-enable-portal",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "dashboard-render-artifact",
+      "file": ".claude/commands/dashboard-render.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "hermes-render",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "remote write"
+      ]
+    },
+    {
+      "id": "device-alternatives",
+      "file": ".claude/commands/device-wipe.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "device-autopilot-enrollment",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "device-entra-join",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "device-full-wipe",
+      "file": ".claude/commands/device-wipe.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Clear-MgDeviceManagementManagedDevice",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-full-wipe-portal",
+      "file": ".claude/commands/device-wipe.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-intune-enrollment",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "device-printer-add",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "device-record-removal",
+      "file": ".claude/commands/device-wipe.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-rename",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-rename-restart",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Rename-Computer",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-retire",
+      "file": ".claude/commands/device-wipe.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Invoke-MgRetireDeviceManagementManagedDevice",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "device-software-install",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "device-windows-update-install",
+      "file": ".claude/commands/new-device-setup.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "distribution-create",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "New-DistributionGroup",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "distribution-delivery-management-portal",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "distribution-external-senders",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-DistributionGroup",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "distribution-external-senders-portal",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "distribution-member-add",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-DistributionGroupMember",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "distribution-portal",
+      "file": ".claude/commands/distribution-list.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "email-allow-domain",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-HostedContentFilterPolicy",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "email-allow-sender",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-HostedContentFilterPolicy",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "email-mailbox-safe-sender",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-MailboxJunkEmailConfiguration",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "email-spam-inbound-remediation",
+      "file": ".claude/commands/email-to-spam.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-spam-outbound-remediation",
+      "file": ".claude/commands/email-to-spam.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-whitelist-method-1",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-whitelist-method-2",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-whitelist-method-3",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-whitelist-method-4",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "email-whitelist-method-5",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "email-whitelist-routing",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "evaluate-repo-clone",
+      "file": "EVALUATE.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "example-commit-attempt-create",
+      "file": "docs/examples.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "example-commit-attempt-stage",
+      "file": "docs/examples.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "example-recommit-create",
+      "file": "docs/examples.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "example-recommit-stage",
+      "file": "docs/examples.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "examples-onboarding-plan",
+      "file": "docs/examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "identity-related"
+      ]
+    },
+    {
+      "id": "examples-onboarding-portal",
+      "file": "docs/examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "field-outlook-addins",
+      "file": ".claude/commands/field.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "group-dynamic-rule-reference",
+      "file": ".claude/commands/group-membership-audit.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "group-membership-remediation",
+      "file": ".claude/commands/group-membership-audit.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "handoff-branch-create",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-bundle-download",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "scp",
+          "count": 2
+        }
+      ],
+      "impactCategories": [
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-commit-files",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-copy-manifest",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "file-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-copy-sanitized",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "file-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-destination-create",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "file-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-manifest-download",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "redirect-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-remote-fetch",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "handoff-stage-files",
+      "file": ".claude/skills/agent-handoff/SKILL.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "health-compliance-remediation",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "health-connect-maintenance",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "health-delta-sync",
+      "file": "modules/systems/health_checks.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "health-force-replication",
+      "file": "modules/systems/health_checks.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "repadmin",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "health-license-action",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "health-risky-user-action",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "health-stale-device-delete",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "health-sync-remediation",
+      "file": "modules/systems/health_checks.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "hermes-bridge-delta-sync",
+      "file": ".claude/skills/hermes-bridge-powershell/SKILL.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "hermes-bridge-local-copy",
+      "file": ".claude/skills/hermes-bridge-powershell/SKILL.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "scp",
+          "count": 1
+        },
+        {
+          "sink": "Start-Process",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "hook-install-copy",
+      "file": "modules/automation/pre_commit_hooks.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "file-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "hook-install-mode",
+      "file": "modules/automation/pre_commit_hooks.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "metadata-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "infrastructure-connect-upgrade",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "infrastructure-delta-sync",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "infrastructure-force-replication",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "repadmin",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "infrastructure-gpo-action",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "infrastructure-gpo-refresh",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Invoke-GPUpdate",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "infrastructure-local-gpo-refresh",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "gpupdate",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "infrastructure-password-reset",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "infrastructure-recovery-actions",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "infrastructure-replication-action",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "infrastructure-server-maintenance",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "infrastructure-sync-error-fixes",
+      "file": "modules/systems/infrastructure.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "install-exchange-quarantine",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "install-exchange-spam",
+      "file": ".claude/commands/email-to-spam.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "install-exchange-whitelist",
+      "file": ".claude/commands/email-whitelist.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "install-graph-conditional-access",
+      "file": ".claude/commands/conditional-access.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "install-teams-module",
+      "file": ".claude/commands/teams-issue.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "intune-compliance-remediation",
+      "file": ".claude/commands/intune-compliance.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-account-block",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-account-unblock",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-admin-role-remove",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-byod-retire",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-ca-restore",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "ir-clear-mfa",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-defender-remediation",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-device-reenroll",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "ir-device-reimage",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-endpoint-isolate",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-file-restore",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "ir-intune-device-delete",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-onedrive-restore",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ir-password-reset",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ir-phish-quarantine",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-release-overblocked-message",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-sender-domain-block",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-session-revoke",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-submit-message-to-microsoft",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ir-work-device-wipe",
+      "file": "modules/security/incident_response.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "jira-token-leak-response",
+      "file": ".claude/commands/jira-update.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "license-audit-documentation-portal",
+      "file": ".claude/commands/license-audit.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "license-column-view",
+      "file": ".claude/commands/license-audit.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "license-group-remediation-portal",
+      "file": ".claude/commands/license-audit.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "license-remove-portal",
+      "file": ".claude/commands/license-audit.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "mailbox-full-access-grant",
+      "file": ".claude/commands/mailbox-permissions.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-MailboxPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "mailbox-grant-portal",
+      "file": ".claude/commands/mailbox-permissions.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "mailbox-permission-remove",
+      "file": ".claude/commands/mailbox-permissions.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Remove-MailboxPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "mailbox-permission-remove-portal",
+      "file": ".claude/commands/mailbox-permissions.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "mailbox-send-as-grant",
+      "file": ".claude/commands/mailbox-permissions.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-RecipientPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "meraki-vpn-advertise-subnet",
+      "file": ".claude/commands/meraki-vpn-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "meraki-vpn-configuration",
+      "file": ".claude/commands/meraki-site-vpn.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "meraki-vpn-peer-subnet",
+      "file": ".claude/commands/meraki-vpn-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "meraki-vpn-vlan-readdress",
+      "file": ".claude/commands/meraki-vpn-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "mfa-ca-exclusion",
+      "file": ".claude/commands/mfa-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "mfa-method-delete-portal",
+      "file": ".claude/commands/mfa-issue.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "mfa-phone-add",
+      "file": ".claude/commands/mfa-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "mfa-session-revoke",
+      "file": ".claude/commands/mfa-issue.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Revoke-MgUserSignInSession",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "mfa-session-revoke-portal",
+      "file": ".claude/commands/mfa-issue.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "network-auto-vpn",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "network-firewall-rule",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:add",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "network-port-forward",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:add",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "network-ssid-config",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "network-vendor-contact",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "network-voip-qos",
+      "file": "modules/systems/network_ops.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-ad-create",
+      "file": ".claude/commands/new-user.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "New-ADUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-delta-sync",
+      "file": ".claude/commands/new-user.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "new-user-step-01",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-02",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-03",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-04",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-05",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-06",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-07",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-08",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-09",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-10",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-11",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-12",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-13",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-14",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-15",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-16",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-17",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-18",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-19",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-20",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-21",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-22",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "new-user-step-23",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "new-user-step-24",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-25",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "new-user-step-26",
+      "file": ".claude/commands/new-user.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-ad-disable-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-ad-disable-ps",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Disable-ADAccount",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-adobe-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-clear-mfa-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-cloud-block-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-cloud-block-ps",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Update-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-delta-sync-ps",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "offboard-device-retire-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-device-wipe-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "offboard-disabled-ou-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-disposal-schedule-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-dl-strip-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-group-removal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Remove-ADGroupMember",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-group-strip-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-jira-closure-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "offboard-license-remove-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-mailbox-convert-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-mailbox-convert-ps",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-Mailbox",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-mailbox-delegate-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-mailbox-delegate-ps",
+      "file": ".claude/commands/offboard.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-MailboxPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-mailbox-delegation-strip-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-onedrive-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-password-reset-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-physical-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-revoke-sessions-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "offboard-voicemail-clear-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "offboard-voip-deactivate-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-voip-reclaim-extension-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-vpn-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-work-phone-group-remove-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "offboard-work-phone-wipe-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-zoom-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "offboard-zoom-transfer-portal",
+      "file": ".claude/commands/offboard.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "onedrive-client-reset",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-Process",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "onedrive-client-restart",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-Process",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "onedrive-file-remediation",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "onedrive-files-on-demand",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:enable",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "onedrive-full-reset",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "onedrive-library-remediation",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "onedrive-manager-admin",
+      "file": ".claude/commands/onedrive-restore.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-SPOUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "onedrive-quota-change",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-SPOSite",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "onedrive-restore-actions",
+      "file": ".claude/commands/onedrive-restore.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "onedrive-sharepoint-module-install",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Install-Module",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "onedrive-signin-remediation",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "onedrive-storage-remediation",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "onedrive-sync-remediation",
+      "file": ".claude/commands/onedrive-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "outlook-auto-reply",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-MailboxAutoReplyConfiguration",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "outlook-auto-reply-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "outlook-calendar-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "outlook-credential-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "outlook-open-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "outlook-outbox-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "outlook-search-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "outlook-shared-mailbox",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "outlook-sync-remediation",
+      "file": ".claude/commands/outlook-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "password-account-unlock",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "password-cloud-reset",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Update-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "password-reset-cloud-portal",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "password-reset-delta-sync",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "password-reset-synced-portal",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "password-session-revoke",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Revoke-MgUserSignInSession",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "password-session-revoke-portal",
+      "file": ".claude/commands/password-reset.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "plan-bitlocker-key",
+      "file": "docs/plan-mode-templates.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "plan-ca-policy",
+      "file": "docs/plan-mode-templates.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "plan-mass-license",
+      "file": "docs/plan-mode-templates.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "plan-vpn-cutover",
+      "file": "docs/plan-mode-templates.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "portal-nav-defender-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "portal-nav-entra-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "portal-nav-exchange-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "permission-related"
+      ]
+    },
+    {
+      "id": "portal-nav-intune-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:update",
+          "count": 1
+        },
+        {
+          "sink": "portal:wipe",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "portal-nav-jira-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:add",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "portal-nav-m365-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:delete",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "portal-nav-meraki-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "portal-nav-voip-reference",
+      "file": "docs/portal-nav-2026.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "identity-related"
+      ]
+    },
+    {
+      "id": "print-queue-delete",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Remove-Item",
+          "count": 1
+        },
+        {
+          "sink": "Start-Service",
+          "count": 1
+        },
+        {
+          "sink": "Stop-Service",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "print-queue-delete-portal",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-default-change",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "printer-dhcp-reservation",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "printer-driver-install-initial",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-driver-remove-readd",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-driver-update",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-ip-remove-readd",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-network-add-by-ip",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-network-add-initial",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-offline-toggle",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "printer-switch-port-vlan",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "printer-user-driver-reinstall",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "printer-user-job-delete",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "printer-user-spooler-restart",
+      "file": ".claude/commands/printer-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "quarantine-allow-entry",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-delete-portal",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-disposition-guide",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-permanent-delete",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Delete-QuarantineMessage",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-policy-change",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-all",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Release-QuarantineMessage",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-all-portal",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-dialog",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-one",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Release-QuarantineMessage",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-one-portal",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-release-report-option",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "quarantine-submit-false-positive",
+      "file": ".claude/commands/email-quarantine.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "readme-hook-install",
+      "file": "README.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "file-write",
+          "count": 1
+        },
+        {
+          "sink": "metadata-write",
+          "count": 1
+        },
+        {
+          "sink": "redirect-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "readme-repo-clone",
+      "file": "README.md",
+      "kind": "shell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "git-write",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "restricted-entity-unblock",
+      "file": ".claude/commands/email-to-spam.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Remove-BlockedSenderAddress",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "restricted-entity-unblock-portal",
+      "file": ".claude/commands/email-to-spam.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "rollback-bulk-usage-checkpoint-write",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "rollback-bulk-usage-location",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Set-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "rollback-group-change",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "New-MgGroupMember",
+          "count": 1
+        },
+        {
+          "sink": "Remove-MgGroupMemberByRef",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "rollback-group-checkpoint-write",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "rollback-license-checkpoint-write",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "rollback-policy-checkpoint-write",
+      "file": "modules/automation/powershell/rollback_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "safety-bulk-disable",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Disable-ADAccount",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "safety-bulk-disable-checkpoint-write",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "safety-bulk-license-route",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-MgUserLicense",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "safety-cryptic-bulk-mutation",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "set-mg",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "safety-delete-user",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Remove-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "safety-delete-user-checkpoint-write",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "safety-group-checkpoint-write",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "dotnet-file-create",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-delete",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-flush",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-move",
+          "count": 1
+        },
+        {
+          "sink": "dotnet-file-write",
+          "count": 1
+        },
+        {
+          "sink": "New-Item",
+          "count": 1
+        },
+        {
+          "sink": "Out-Null",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "safety-group-poststate-export",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Export-Csv",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "safety-readable-bulk-mutation",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "safety-whatif-disable",
+      "file": "modules/automation/powershell/safety_patterns.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Disable-ADAccount",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "security-account-block",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Update-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "security-account-block-followup-portal",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-account-block-portal",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-credential-remediation",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-message-policy-remediation",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-session-revoke",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Revoke-MgUserSignInSession",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-session-revoke-portal",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "security-synced-ad-disable",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Disable-ADAccount",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "security-synced-cloud-gap-block",
+      "file": ".claude/commands/security-alert-triage.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Update-MgUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-convert",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-Mailbox",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-convert-portal",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-create",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "New-Mailbox",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "shared-mailbox-create-grant",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-full-access",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-MailboxPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-send-as",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-RecipientPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "shared-mailbox-send-on-behalf",
+      "file": ".claude/commands/shared-mailbox.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-Mailbox",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sharepoint-access-revoke",
+      "file": ".claude/commands/sharepoint-access.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Remove-PnPGroupMember",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sharepoint-access-revoke-portal",
+      "file": ".claude/commands/sharepoint-access.md",
+      "kind": "portal",
+      "mode": "gated",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sharepoint-grant-portal",
+      "file": ".claude/commands/sharepoint-access.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sharepoint-item-grant",
+      "file": ".claude/commands/sharepoint-access.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-PnPListItemPermission",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sharepoint-member-grant",
+      "file": ".claude/commands/sharepoint-access.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Add-PnPGroupMember",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "sip-alg-change",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "sip-firewall-change",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "sip-nat-change",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "sip-phone-reboot",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "sip-phone-reboot-after-alg",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "sip-phone-reprovision",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "sip-softphone-install",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "sip-udp-timeout-change",
+      "file": ".claude/commands/sip-trunk-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "teams-app-reset-warning",
+      "file": ".claude/commands/teams-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "teams-local-reset",
+      "file": ".claude/commands/teams-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "teams-policy-change",
+      "file": ".claude/commands/teams-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:assign",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "teams-policy-grant",
+      "file": ".claude/commands/teams-issue.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Grant-CsTeamsMeetingPolicy",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "ticket-ca-exception",
+      "file": "docs/ticket-examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ticket-delta-sync-ps",
+      "file": "docs/ticket-examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "ticket-license-remove-ps",
+      "file": "docs/ticket-examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Set-MgUserLicense",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ticket-mfa-method-remove-ps",
+      "file": "docs/ticket-examples.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Remove-MgUserAuthenticationMethod",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ticket-mfa-remediation",
+      "file": "docs/ticket-examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "ticket-network-remediation",
+      "file": "docs/ticket-examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ticket-offboard-license",
+      "file": "docs/ticket-examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "identity-related"
+      ]
+    },
+    {
+      "id": "ticket-signin-remediation",
+      "file": "docs/ticket-examples.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-compliance-sync",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-device-enrollment",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-email-actions",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-mfa-policy",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-network-actions",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-new-user-sync",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "identity-related"
+      ]
+    },
+    {
+      "id": "troubleshoot-onedrive-reset",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "troubleshoot-remediation-ladder",
+      "file": ".claude/commands/troubleshoot.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "troubleshoot-shared-mailbox-client",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "troubleshoot-signin-actions",
+      "file": "modules/it_support/troubleshooting.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "voicemail-greeting-delete",
+      "file": ".claude/commands/unite-voicemail-reset.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voicemail-pin-reset",
+      "file": ".claude/commands/unite-voicemail-reset.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:reset",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "voicemail-routing-change",
+      "file": ".claude/commands/unite-voicemail-reset.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-call-group",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:add",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "voip-did-assign",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:assign",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-forwarding-config",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-migration-go-live",
+      "file": ".claude/commands/unite-migration-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-migration-rollback",
+      "file": ".claude/commands/unite-migration-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "voip-migration-tasks",
+      "file": ".claude/commands/unite-migration-status.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "voip-phone-provision",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-user-create",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "voip-voicemail-config",
+      "file": ".claude/commands/unite-extension-create.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "vpn-client-routing-mode",
+      "file": ".claude/commands/vpn-check.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-antiphish-policy",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-basic-auth-disable",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "vulnerability-compliance-policy",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-defender-onboarding",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-mfa-policy",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-pim-policy",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "vulnerability-safe-links-policy",
+      "file": "modules/security/vulnerability_scan.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "war-room-copy",
+      "file": ".claude/commands/war-room.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "scp",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "war-room-open-file",
+      "file": ".claude/commands/war-room.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Start-Process",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "war-room-open-url",
+      "file": ".claude/commands/war-room.md",
+      "kind": "powershell",
+      "mode": "gated",
+      "sinks": [
+        {
+          "sink": "Start-Process",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "wifi-client-remediation",
+      "file": ".claude/commands/wifi-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "wifi-network-remediation",
+      "file": ".claude/commands/wifi-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "wifi-radio-remediation",
+      "file": ".claude/commands/wifi-issue.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "workflow-delta-sync",
+      "file": "modules/it_support/workflows.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "Start-ADSyncSyncCycle",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "workflow-device-enrollment",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "portal:rename",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-group-portal",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-license-portal",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-mailbox-delegation",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "workflow-mfa-reset",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-new-user-portal",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-ad",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-block",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-offboard-device",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "workflow-offboard-groups",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-offboard-license",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-mailbox",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-mfa",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "data-removal related",
+        "destructive",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-offboard-onedrive",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related",
+        "permission-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-password",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-offboard-sessions",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "permission-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-password-reset",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "credential-related",
+        "external-system mutation",
+        "identity-related",
+        "security-sensitive"
+      ]
+    },
+    {
+      "id": "workflow-phone-extension",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    },
+    {
+      "id": "workflow-sync-portal",
+      "file": "modules/it_support/workflows.md",
+      "kind": "portal",
+      "mode": "preview",
+      "sinks": [],
+      "impactCategories": []
+    },
+    {
+      "id": "workflow-user-create",
+      "file": "modules/it_support/workflows.md",
+      "kind": "powershell",
+      "mode": "preview",
+      "sinks": [
+        {
+          "sink": "New-ADUser",
+          "count": 1
+        }
+      ],
+      "impactCategories": [
+        "external-system mutation",
+        "identity-related"
+      ]
+    }
+  ],
+  "clientBoundaries": [
+    {
+      "id": "hermes-ask-ssh-disclosure",
+      "file": "scripts/hermes-bridge.ps1",
+      "testFile": "scripts/hermes-bridge.test.js",
+      "interface": "ssh",
+      "mode": "gated",
+      "evidenceGroup": "hermes",
+      "effect": "Send one bounded advisory query to one validated private target and disclose its response locally.",
+      "authorization": "Exact query SHA-256 plus target-digest phrase before credentials or SSH.",
+      "impactCategories": [
+        "information disclosure",
+        "remote access"
+      ]
+    },
+    {
+      "id": "hermes-dashboard-remote-write",
+      "file": "scripts/hermes-bridge.ps1",
+      "testFile": "scripts/hermes-bridge.test.js",
+      "interface": "ssh",
+      "mode": "gated",
+      "evidenceGroup": "hermes",
+      "effect": "Create one previously absent remote dashboard artifact.",
+      "authorization": "Exact date plus resolved action SHA-256 phrase; structured input and no-clobber remote wrapper.",
+      "impactCategories": [
+        "external-system mutation",
+        "remote write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "hermes-war-room-copy-local-write",
+      "file": "scripts/hermes-bridge.ps1",
+      "testFile": "scripts/hermes-bridge.test.js",
+      "interface": "scp",
+      "mode": "gated",
+      "evidenceGroup": "hermes",
+      "effect": "Create one GUID-named local HTML copy from one stable selected remote artifact.",
+      "authorization": "Exact local destination, source digest, full remote content SHA-256, and byte-count phrase.",
+      "impactCategories": [
+        "local filesystem write",
+        "remote access",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "hermes-war-room-open-file",
+      "file": "scripts/hermes-bridge.ps1",
+      "testFile": "scripts/hermes-bridge.test.js",
+      "interface": "native process",
+      "mode": "gated",
+      "evidenceGroup": "hermes",
+      "effect": "Launch one default browser for a locally verified HTML file.",
+      "authorization": "Exact local destination plus verified download SHA-256 phrase after size/content read-back.",
+      "impactCategories": [
+        "local process launch",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "hermes-war-room-open-url",
+      "file": "scripts/hermes-bridge.ps1",
+      "testFile": "scripts/hermes-bridge.test.js",
+      "interface": "native process",
+      "mode": "gated",
+      "evidenceGroup": "hermes",
+      "effect": "Launch one default browser for one allowlisted HTTPS or loopback HTTP URL.",
+      "authorization": "Exact validated absolute URL phrase.",
+      "impactCategories": [
+        "local process launch",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "init-memory-force-replace",
+      "file": "scripts/init-memory.js",
+      "testFile": "scripts/init-memory.test.js",
+      "interface": "local filesystem",
+      "mode": "gated",
+      "evidenceGroup": "memory",
+      "effect": "Checkpoint and replace the six-file memory target set.",
+      "authorization": "Separate --force preview and exact normalized-directory, file-count, effect, and full plan SHA-256 phrase.",
+      "impactCategories": [
+        "data-removal related",
+        "destructive",
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "init-memory-initial-create",
+      "file": "scripts/init-memory.js",
+      "testFile": "scripts/init-memory.test.js",
+      "interface": "local filesystem",
+      "mode": "gated",
+      "evidenceGroup": "memory",
+      "effect": "Create one previously absent six-file memory target set.",
+      "authorization": "Exact normalized-directory, file-count, effect, and full plan SHA-256 phrase.",
+      "impactCategories": [
+        "local filesystem write",
+        "reversible state change"
+      ]
+    },
+    {
+      "id": "jira-comment-internal-api-write",
+      "file": "scripts/jira-client.js",
+      "testFile": "scripts/jira-client.test.js",
+      "interface": "Jira Service Management API",
+      "mode": "gated",
+      "evidenceGroup": "jira",
+      "effect": "Post one internal comment to one normalized issue key.",
+      "authorization": "Exact site, issue, INTERNAL visibility, and full payload SHA-256 phrase before credentials/network.",
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "jira-comment-public-api-write",
+      "file": "scripts/jira-client.js",
+      "testFile": "scripts/jira-client.test.js",
+      "interface": "Jira Service Management API",
+      "mode": "gated",
+      "evidenceGroup": "jira",
+      "effect": "Post one reporter-visible public comment to one normalized issue key.",
+      "authorization": "Exact site, issue, PUBLIC visibility, and full payload SHA-256 phrase before credentials/network.",
+      "impactCategories": [
+        "external-system mutation",
+        "information disclosure"
+      ]
+    },
+    {
+      "id": "jira-create-api-write",
+      "file": "scripts/jira-client.js",
+      "testFile": "scripts/jira-client.test.js",
+      "interface": "Jira Service Management API",
+      "mode": "gated",
+      "evidenceGroup": "jira",
+      "effect": "Create one service request in one service desk and request type.",
+      "authorization": "Exact site, desk, request type, and full payload SHA-256 phrase before credentials/network.",
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "jira-transition-api-write",
+      "file": "scripts/jira-client.js",
+      "testFile": "scripts/jira-client.test.js",
+      "interface": "Jira Service Management API",
+      "mode": "gated",
+      "evidenceGroup": "jira",
+      "effect": "Apply one transition to one issue after a repeated live preflight.",
+      "authorization": "Exact issue key/immutable ID, current-state hash, transition ID/hash phrase; drift causes zero POST.",
+      "impactCategories": [
+        "external-system mutation"
+      ]
+    },
+    {
+      "id": "security-audit-report-create",
+      "file": "scripts/security-audit.js",
+      "testFile": "scripts/security-audit.test.js",
+      "interface": "local filesystem",
+      "mode": "gated",
+      "evidenceGroup": "security-audit",
+      "effect": "Create one previously absent Markdown audit report.",
+      "authorization": "Exact normalized target and full content SHA-256 phrase.",
+      "impactCategories": [
+        "local filesystem write",
+        "reversible state change"
+      ]
+    }
+  ]
+}

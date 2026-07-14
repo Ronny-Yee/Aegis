@@ -1,12 +1,16 @@
 ---
 description: Whitelist a sender or domain in Microsoft 365 — five methods ranked by safety, tradeoffs explained, safest approach recommended. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /email-whitelist
 
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
+
 **Verdict:** There are five ways to allow a sender or domain in M365, and they are NOT equally safe. The **Tenant Allow/Block List** in Defender is the recommended default — scoped, auditable, time-limited. Every broader method bypasses progressively more filtering and increases phishing exposure.
 
 ## What to check first
+> **PREVIEW ONLY [email-whitelist-routing]:** The decision guide routes a proposed release, external submission, or allow entry to its own reviewed command. It cannot release a message, submit evidence, or create an allow.
 - Is this a one-time false positive, or a recurring pattern? One-time → release from quarantine + report FP. Recurring → add an allow.
 - Is this a specific sender or an entire domain? Sender-level is always safer than domain-level.
 - Is the sender external or internal? Internal mail issues usually mean a connector or relay problem — not a whitelist job.
@@ -15,6 +19,8 @@ description: Whitelist a sender or domain in Microsoft 365 — five methods rank
 ## Step-by-step fix — choose the right method
 
 ### Method 1 — Tenant Allow/Block List (RECOMMENDED)
+
+> **PREVIEW ONLY [email-whitelist-method-1]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 **Safety: Highest.** Scoped to specific sender/domain, time-limited, reviewable, does not bypass authentication checks.
 
 `Defender portal (security.microsoft.com) → Email & collaboration → Policies & rules → Threat policies → Tenant Allow/Block Lists → Senders tab → + Add`
@@ -29,6 +35,8 @@ Use this for: trusted vendors, known-good newsletters, partner orgs with occasio
 ---
 
 ### Method 2 — Anti-spam policy: allowed senders / domains
+
+> **PREVIEW ONLY [email-whitelist-method-2]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 **Safety: Medium.** Bypasses spam filtering for the listed sender/domain, but authentication checks (SPF/DKIM/DMARC) still apply. Applies to all users covered by the policy (often org-wide).
 
 `Defender portal → Email & collaboration → Policies & rules → Threat policies → Anti-spam → [policy name] → Edit → Allowed and blocked senders and domains → Allowed senders / Allowed domains → + Add`
@@ -43,6 +51,8 @@ Use for: high-volume trusted senders where TABL expiry management is impractical
 ---
 
 ### Method 3 — Exchange mail flow (transport) rule to set SCL -1
+
+> **PREVIEW ONLY [email-whitelist-method-3]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 **Safety: Low. Last resort only.** SCL -1 bypasses ALL spam and bulk filtering. Unlike methods 1–2, a well-crafted transport rule can also bypass phishing and malware checks if written broadly.
 
 `Exchange admin center (admin.exchange.microsoft.com) → Mail flow → Rules → + Add a rule`
@@ -61,6 +71,8 @@ Use only when: a specific sender is required by the business, TABL and anti-spam
 ---
 
 ### Method 4 — Per-user Safe Senders in OWA/Outlook
+
+> **PREVIEW ONLY [email-whitelist-method-4]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 **Safety: Medium (user-scoped only).** Only affects the individual user's junk filtering — does not touch org-level spam policies. Simplest for one-off user requests.
 
 User-side (the user does this themselves in OWA):
@@ -73,6 +85,8 @@ Use for: a single user reporting a specific sender as landing in Junk, where the
 ---
 
 ### Method 5 — Connection filter IP allow list
+
+> **PREVIEW ONLY [email-whitelist-method-5]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 **Safety: Low. Use only for known IP ranges you control.** Bypasses spam and malware filtering for all mail from the listed IPs. Typically used for on-prem relay servers or branch office mail flows.
 
 `Defender portal → Email & collaboration → Policies & rules → Threat policies → Anti-spam → Connection filter policy (Default) → Edit → Always allow messages from the following IP addresses or address range → + Add → [IP_ADDRESS_OR_RANGE]`
@@ -95,29 +109,49 @@ Use for: your own on-prem mail relay, a known MFP/scanner IP, or a trusted third
 <summary>PowerShell — for reference only</summary>
 
 ```powershell
-# Install Exchange Online module if not already present
-Install-Module ExchangeOnlineManagement -Scope CurrentUser
+# Resolve one exact Exchange Online module version from the canonical PowerShell Gallery endpoint.
+$moduleName = 'ExchangeOnlineManagement'
+$repositoryName = 'PSGallery'
+$expectedRepositorySource = 'https://www.powershellgallery.com/api/v2'
+$repository = Get-PSRepository -Name $repositoryName -ErrorAction Stop
+if ($repository.SourceLocation.TrimEnd('/') -cne $expectedRepositorySource) { throw "PSGallery source mismatch. No module was installed." }
+$moduleVersionText = Read-Host "Enter the independently reviewed exact $moduleName version (for example, 3.0.0)"
+if ($moduleVersionText -cnotmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') { throw "An exact stable module version is required. No module was installed." }
+$candidate = Find-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -ErrorAction Stop
+if ([string]$candidate.Name -cne $moduleName -or [string]$candidate.Version -cne $moduleVersionText) { throw "Module preflight did not resolve the exact requested package. No module was installed." }
+# SAFETY GATE [install-exchange-whitelist]
+# Target: exact $moduleName version $moduleVersionText from canonical $repositoryName
+# Effect: installs one local PowerShell module without changing mail policy
+# Scope: CurrentUser on this workstation
+# Reversibility: reversible through a separately reviewed Uninstall-Module action
+$requiredConfirmation = "INSTALL POWERSHELL MODULE $moduleName VERSION $moduleVersionText FROM $repositoryName"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm the local CurrentUser install"
+if ($confirmation -ceq $requiredConfirmation) {
+    Install-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -Scope CurrentUser -ErrorAction Stop
+    $installed = Get-InstalledModule -Name $moduleName -RequiredVersion $moduleVersionText -ErrorAction Stop
+    if ([string]$installed.Version -cne $moduleVersionText) { throw "Installed-module read-back did not match the approved version." }
+} else {
+    throw "Confirmation did not match. No change was made."
+}
 
 # Connect to Exchange Online
 Connect-ExchangeOnline -UserPrincipalName "[UPN]"   # sign in as Exchange admin
 
-# --- Method 2: Add an allowed sender to the Default anti-spam policy ---
-Set-HostedContentFilterPolicy -Identity "Default" `
-    -AllowedSenders @{Add = "[SENDER]"}              # add one sender to the allow list
-    # ⚠️ use @{Add=...} to append, NOT a plain array — that overwrites the existing list
+# PREVIEW ONLY [email-allow-sender] — non-executing anti-spam policy reference; export the policy and use a separately reviewed expiring allow entry.
+# Set-HostedContentFilterPolicy -Identity "Default" `
+#     -AllowedSenders @{Add = "[SENDER]"}
 
-# Add an entire domain to the allowed domains list
-Set-HostedContentFilterPolicy -Identity "Default" `
-    -AllowedSenderDomains @{Add = "[DOMAIN]"}        # ⚠️ bypasses spam filtering for whole domain — use sparingly
+# PREVIEW ONLY [email-allow-domain] — non-executing tenant-wide filtering bypass reference.
+# Set-HostedContentFilterPolicy -Identity "Default" `
+#     -AllowedSenderDomains @{Add = "[DOMAIN]"}
 
 # View current allowed senders/domains on the Default policy
 Get-HostedContentFilterPolicy -Identity "Default" |
     Select-Object AllowedSenders, AllowedSenderDomains   # confirm what's already in the list
 
-# --- Method 4: Add a Safe Sender for a specific user (admin-managed) ---
-Set-MailboxJunkEmailConfiguration -Identity "[UPN]" `
-    -TrustedSendersAndDomains @{Add = "[SENDER]"}    # adds to the user's personal safe senders list
-    # does NOT affect org-level spam filtering — scoped to this mailbox only
+# PREVIEW ONLY [email-mailbox-safe-sender] — non-executing mailbox-scoped allow reference.
+# Set-MailboxJunkEmailConfiguration -Identity "[UPN]" `
+#     -TrustedSendersAndDomains @{Add = "[SENDER]"}
 
 # View a user's current safe senders list
 Get-MailboxJunkEmailConfiguration -Identity "[UPN]" |

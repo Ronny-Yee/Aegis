@@ -23,7 +23,7 @@ Security is not bolted on — it is embedded in the agent execution loop:
 1. **Pre-commit scanning** — when the hook is installed and not bypassed, every staged
    add/copy/modify/rename/typechange blob is read; strict UTF-8 text is pattern-scanned for PII,
    hardcoded credentials, and dangerous cmdlets (`scripts/pre-commit-check.js`). Binary or invalid
-   text fails closed for manual review; CI separately runs the scanner's `--all` tracked-tree mode.
+   text fails closed for manual review; CI separately runs `--all` over tracked plus nonignored untracked working-tree text.
 
 2. **Destructive action policy** — agent instructions require explicit operator confirmation for
    destructive operations (wipe, delete, disable, revoke, bulk modify). Deterministic CLI gates

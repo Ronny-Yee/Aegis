@@ -1,8 +1,11 @@
 ---
 description: Check SIP trunk health and desk phone registration status across [@Aegion_VOIP] and Meraki MX. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /sip-trunk-status
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Most SIP/registration failures trace to one of three causes — SIP ALG enabled on the Meraki MX (disrupts SIP signaling), a NAT/firewall blocking RTP media ports (causes one-way audio or no audio), or the desk phone losing its provisioning profile. Start at the [@Aegion_VOIP] admin portal to confirm registration state, then move to Meraki if the phone shows as registered but audio is broken.
 
@@ -32,19 +35,25 @@ description: Check SIP trunk health and desk phone registration status across [@
 
 - Check the phone screen — does it show an IP address in the phone's status/network menu?
 - If no IP: check the PoE switch port (Meraki MS) → **dashboard.meraki.com → Switch → Ports** — confirm the port is up and the phone is listed as a connected client.
+> **PREVIEW ONLY [sip-phone-reboot]:** A PoE disconnect/reboot interrupts calls and is not authorized by this status reference. Resolve the exact phone/MAC, confirm no active call, and use a separate reversible maintenance action.
 - Reboot the phone (unplug PoE, wait 10 s, replug) and watch for registration.
 
 ### 3. Check SIP ALG on the Meraki MX — MUST be disabled
+
+> **PREVIEW ONLY [sip-alg-change]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 SIP ALG rewrites SIP headers and breaks registrations and audio. Verify it is off:
 
 1. **dashboard.meraki.com → Security & SD-WAN → Firewall**.
 2. Scroll to **SIP ALG** — confirm it is **Disabled**.
-3. If it is enabled: disable it → **Save**. Wait 2 min, reboot the affected phone(s).
+3. If it is enabled, prepare the separately reviewed SIP ALG change described by this preview; do not disable or save it here.
+> **PREVIEW ONLY [sip-phone-reboot-after-alg]:** Any post-change phone reboot is a separate per-device interruption requiring its own exact target and active-call check.
 
 > SIP ALG must be **disabled** for [@Aegion_VOIP] on all Meraki MX appliances. This is the single most common cause of intermittent registration drops and one-way audio.
 
 ### 4. Check NAT and firewall — one-way audio diagnosis
+
+> **PREVIEW ONLY [sip-firewall-change]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 One-way audio (you can hear them, they can't hear you — or vice versa) = RTP media ports are being blocked or mis-NATted.
 
@@ -56,20 +65,25 @@ One-way audio (you can hear them, they can't hear you — or vice versa) = RTP m
    - **UDP 5060** — SIP signaling
    - **UDP 5061** — SIP over TLS (if used)
    - **UDP 10000–20000** — RTP media (verify exact range with [@Aegion_VOIP] support if unsure)
-4. If port address translation (PAT) is aggressive: [@Aegion_VOIP] phones may need a static 1:1 NAT or a UDP timeout increase.
+> **PREVIEW ONLY [sip-nat-change]:** A NAT entry is a separate perimeter-network mutation. Resolve the MX/network IDs, public/private mapping, collision check, scope, and rollback before a separately reviewed change.
+4. If port address translation (PAT) is aggressive: [@Aegion_VOIP] phones may need a separately reviewed static 1:1 NAT change.
    - **Meraki MX → Firewall → One-to-one NAT** — add entry if needed.
 
 **UDP timeout (if RTP drops mid-call):**
 
-- Meraki default UDP timeout can be short. Check with [@Aegion_VOIP] support for recommended UDP session timeout value and set it under **MX → Firewall → Firewall settings**.
+> **PREVIEW ONLY [sip-udp-timeout-change]:** Changing the UDP timeout affects flows beyond one phone. Capture the exact MX/network, current value, vendor recommendation, blast radius, and rollback; do not set it here.
+- Meraki default UDP timeout can be short. Compare the current value with the documented [@Aegion_VOIP] recommendation.
 
 ### 5. Test with a softphone to isolate hardware vs. network
 
+> **PREVIEW ONLY [sip-softphone-install]:** Installing/signing into a softphone creates endpoint and account-session state. Use an approved package, test account/device, licensing check, and separate install authorization.
 - Install the [@Aegion_VOIP] softphone app (mobile or desktop) and log in as [USER_NAME] on the same network.
 - If the softphone registers and audio works: the desk phone itself is faulty or needs reprovisioning → go to step 6.
 - If the softphone also fails: the problem is network or trunk → recheck steps 3–4 or escalate to [@Aegion_VOIP] support with a SIP trace.
 
 ### 6. Reprovision the desk phone
+
+> **PREVIEW ONLY [sip-phone-reprovision]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 1. In the [@Aegion_VOIP] admin portal → **Users** → [USER_NAME] → **Devices**.
 2. Locate the desk phone (by MAC address: `[MAC_ADDRESS]`).

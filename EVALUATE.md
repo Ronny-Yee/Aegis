@@ -5,10 +5,12 @@ Don't take the README's word for any of this. This page walks you through firing
 **You need:** [Claude Code](https://claude.ai/code) with your own Anthropic account · Git · Node.js. Total time: ~10 minutes.
 
 ```bash
-git clone https://github.com/qFermions/Aegis
+# PREVIEW ONLY [evaluate-repo-clone]: git clone https://github.com/qFermions/Aegis
 cd Aegis
 claude
 ```
+
+The clone line is intentionally inert because it writes a new local tree. Choose and inspect the destination first, then run that one command as a separately authorized local action.
 
 The full probe suite (T1–T10, each with expected behavior specified) lives in [`modules/security/threat_model.md`](modules/security/threat_model.md) §4. This session runs five of them.
 
@@ -42,19 +44,13 @@ Open [`modules/security/threat_model.md`](modules/security/threat_model.md) §4 
 
 ## Probe 4 — The scanner blocks a staged secret (T10)
 
-Watch the deterministic layer work — no model involved. Generate a fake GitHub-token-shaped string (the command below builds one so this file doesn't contain it):
+Watch the deterministic layer work — no model involved. The regression test creates an isolated temporary repository, stages a synthetic token-shaped value there, proves the scanner blocks it, and lets the test runner clean up that temporary directory:
 
 ```bash
-printf 'token = ghp_%030d\n' 7 > leak-test.md
-git add leak-test.md
-node scripts/pre-commit-check.js
+node --test scripts/pre-commit-check.test.js
 ```
 
-**Expected:** exit code 1, `🔴 BLOCK — GitHub token`, commit refused. Clean up:
-
-```bash
-git reset leak-test.md && rm leak-test.md
-```
+**Expected:** the test suite passes, including assertions that the staged synthetic GitHub-token shape produces scanner exit code 1, a `🔴 BLOCK — GitHub token` result, and redacted output. It never stages or removes a file in this checkout.
 
 Bonus: run the CI gate locally — `node scripts/pre-commit-check.js --all` scans every tracked file and should print clean (WARNs on documented dangerous cmdlets in command docs are expected and non-blocking).
 

@@ -1,5 +1,5 @@
 ---
-description: Query Aegis D Hermes's alpha-signal-brief skill for a single TICKER and return a one-line, plain-English read (signal · conviction · why).
+description: Validate one ticker and prepare a Hermes alpha-signal request without silently authorizing its remote cache refresh.
 disable-model-invocation: true
 ---
 
@@ -7,58 +7,36 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R1 — runs one remote analysis command and appends one local log entry.
-- **Access:** credential-sensitive remote execution and local write.
-- **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
+- **Risk level:** R0 for validation and cached reads; the live alpha-signal skill is preview-only because its remote cache-write scope is not documented.
+- **Access:** local validation and a route to the read-only cached portfolio view; no live remote refresh and no local log write.
+- **Credential-sensitive:** a future live refresh would use the SSH agent, but this command does not invoke it.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does (plain English):** Asks Hermes's `alpha-signal-brief` skill for a quick read on one ticker and returns a single plain-English line — signal, conviction, and the one reason that matters. For a gut-check, not a full thesis (use `/ask-hermes` or `/dashboard-render` for depth).
-
-**Operator types:**
-```
-/alpha-signal [TICKER]
-```
-
-**Expected output:**
-```
-🎯 [TICKER] — BULLISH (medium): rev growth re-accelerating into the next print; trend intact above the 50-day.
-```
-
-## How Aegis executes
-
-1. Read the TICKER arg (everything after `/alpha-signal`). **Require a ticker** — if none, ask for one (don't guess).
-2. Uppercase + validate it looks like a ticker (1–5 letters, optional `.X`); reject junk. Ideally confirm it's in the holdings book (the tickers listed in `[HERMES_HOLDINGS]`).
-3. SSH to Hermes (Windows OpenSSH) and run the `alpha-signal-brief` skill for that ticker via the `hermes -z` bridge.
-4. Compress Hermes's answer to **one line**: `TICKER — SIGNAL (conviction): why.` Offer `/ask-hermes <ticker> full read` for depth.
-
-> Note: this invokes the alpha-signal-brief skill, which may refresh a news/price cache on Hermes (a small write) as part of computing the read — that is the operator-invoked, intended behavior of this command. For a pure no-write view of the last cached read, use `/portfolio-status`.
-
-<details>
-<summary>Underlying commands — for reference (plain-English comments per line)</summary>
+Use `/alpha-signal [TICKER]` to validate one ticker and prepare a one-line signal request. Validation is strict: uppercase 1-5 letters with an optional one-letter class suffix.
 
 ```powershell
-$ssh = "C:\Windows\System32\OpenSSH\ssh.exe"
-$ticker = ($args -join ' ').Trim().ToUpper()                 # take arg, trim, uppercase
-if (-not ($ticker -match '^[A-Z]{1,5}(\.[A-Z])?$')) { throw "Give me a valid ticker, e.g. /alpha-signal [TICKER]" }
-
-# Run the real skill through the same bridge /ask-hermes uses, scoped to alpha-signal-brief
-& $ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] `
-  "timeout 180 hermes -z 'alpha signal one-liner for $ticker: signal, conviction, one reason' --skills alpha-signal-brief"
-  # gpt-5.5 returns a short read; compress to a single line on the Aegis side
+# Preserve only one ticker token and normalize its case.
+$ticker = ($args -join ' ').Trim().ToUpperInvariant()
+# Reject empty, broad, option-like, and shell-bearing values.
+if ($ticker -cnotmatch '^[A-Z]{1,5}(?:\.[A-Z])?$') { throw 'Give one valid ticker, for example [TICKER].' }
 ```
-</details>
 
-## Remote-write / local-write safety
-- Read-mostly: a signal query. It may refresh a cache as a side effect of the skill, but it places **no trades**, changes **no positions**, and restarts **no service**. Authentication uses the loaded SSH agent; no key material is read or printed.
-- This is a signal read, **not** a buy/sell recommendation — present it as Hermes's read; finance lives in Hermes's lane (Aegis surfaces, doesn't advise).
-- Never forward the signal to anyone but the operator. Hermes host/paths stay `[HERMES_*]` placeholders.
+**PREVIEW ONLY [alpha-signal-cache-refresh]:** The `alpha-signal-brief` skill may refresh news/price cache objects on Hermes. Their count, exact paths, prior state, and rollback are not documented in this repository, so the live SSH call is not authorized here. Do not relabel that side effect “read-only” or run the old interpolated `hermes -z` command.
 
-## Failure modes (handle gracefully, never block)
-- **No ticker given:** "Which ticker? e.g. `/alpha-signal [TICKER]`." Don't guess.
-- **SSH unreachable / timeout:** "Hermes is offline — can't pull a signal for $ticker. Check `/hermes-status`." Stop.
-- **Empty / unknown ticker from Hermes:** "Hermes has no signal for $ticker (unknown or no coverage)." Don't fabricate a read.
-- **SSH auth error:** key must be in the Windows ssh-agent (see `/hermes-status`).
+For a genuinely read-only view, use `/portfolio-status`, which reads the last cached signal and shows its timestamp. If a fresh signal is required later, first inventory the cache objects and reversibility, then add an action-specific gate. The future transport must use the static-stdin bridge in `scripts/hermes-bridge.ps1`; ticker data must never be interpolated into a remote command.
 
-## Logging
-Append to the repository-relative `.aegis-state/hermes-escalation-log.md`:
-`[YYYY-MM-DD HH:MM:SS] /alpha-signal <TICKER> → <SIGNAL|NO-COVERAGE|UNREACHABLE>`
+Required confirmation shape for a future reviewed refresh:
+
+`REFRESH HERMES ALPHA CACHE FOR <TICKER> ACTION SHA256 <resolved-target-and-cache-set-sha256>`
+
+That phrase is documentation only until the cache set and rollback are known. It does not authorize execution.
+
+## Output boundary
+
+Cached output remains Hermes financial analysis, not an Aegis recommendation. Show its source timestamp, do not fabricate a missing signal, and never forward it beyond the operator.
+
+## Proposed audit line
+
+Automatic append to `.aegis-state/hermes-escalation-log.md` is **PREVIEW ONLY**. Return without writing:
+
+`[YYYY-MM-DD HH:MM:SS] /alpha-signal <TICKER> -> PREVIEW-NO-REFRESH`

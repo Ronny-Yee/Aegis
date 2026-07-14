@@ -3,6 +3,10 @@
 Tier 1–2 support workflows for Microsoft 365 hybrid environments. Covers the most
 common ticket categories with exact portal steps and PowerShell fallbacks.
 
+## Execution boundary
+
+This index is read-only routing/reference material. It does not authorize any portal or PowerShell write. Resolve identity source authority and route every proposed state change to the named canonical workflow with exact target, pre-state/rollback, and action-specific confirmation.
+
 ## Contents
 
 | File | Purpose |
@@ -27,7 +31,7 @@ common ticket categories with exact portal steps and PowerShell fallbacks.
 |------------|-------------|-------------|
 | Can't sign in | Is sign-in blocked? | Entra → Users → [UPN] → Edit properties |
 | MFA issues | Auth methods registered? | Entra → Users → [UPN] → Authentication methods |
-| Password reset | Cloud-only or hybrid AD? | admin.microsoft.com → Users → Reset password |
+| Password reset | Resolve `OnPremisesSyncEnabled` | Hybrid: authoritative AD reset; verified cloud-only: Microsoft 365 admin reset. Route both to `/password-reset` |
 | Missing email | Quarantine? | security.microsoft.com → Quarantine |
 | Device not enrolling | Enrollment restrictions? | Intune → Devices → Enrollment restrictions |
 | No phone dial tone | Extension status? | [@Aegion_VOIP] admin → Extensions |

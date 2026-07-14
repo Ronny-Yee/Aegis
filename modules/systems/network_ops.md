@@ -1,5 +1,9 @@
 # Network Operations
 
+## Execution boundary
+
+This module is planning/reference only and never authorizes a network change or vendor submission. Use `/lan-wan` for firewall/routing diagnosis and change planning, `/meraki-site-vpn` for a VPN action, and `/wifi-issue` for a wireless action. The destination command must independently resolve the target and require an action-specific exact confirmation; if it has no applicable gate, the change remains planning-only.
+
 Cisco Meraki management, site-to-site VPN configuration, and wireless troubleshooting
 for a multi-site deployment.
 
@@ -42,6 +46,8 @@ for a multi-site deployment.
 
 ### Adding an L3 Firewall Rule
 
+> **PREVIEW ONLY [network-firewall-rule]:** Route this proposal to `/lan-wan`. This module cannot add, reorder, enable, or save a firewall rule; execution remains blocked unless the destination supplies an action-local gate.
+
 1. Security & SD-WAN → Firewall → L3 firewall rules
 2. Click `Add rule` at top (rules are evaluated top-to-bottom, first match wins)
 3. Set: Policy (Allow/Deny), Protocol, Source, Destination, Port, Comment
@@ -51,6 +57,8 @@ for a multi-site deployment.
 A "Deny all" at the bottom blocks anything not explicitly allowed above it.
 
 ### Port Forwarding (Inbound NAT)
+
+> **PREVIEW ONLY [network-port-forward]:** Route this proposal to `/lan-wan`. This module cannot create or save a port-forwarding rule; execution remains blocked unless the destination supplies an action-local gate.
 
 1. Security & SD-WAN → Firewall → Port forwarding
 2. Click Add rule
@@ -67,6 +75,8 @@ A "Deny all" at the bottom blocks anything not explicitly allowed above it.
 - All Meraki MX units should be enrolled in the same organization dashboard for Auto VPN
 
 ### Meraki Auto VPN Configuration
+
+> **PREVIEW ONLY [network-auto-vpn]:** Route any hub, spoke, subnet-participation, enable, disable, or cutover action to `/meraki-site-vpn`. This module cannot change VPN configuration.
 
 **Hub (main office):**
 1. Security & SD-WAN → Site-to-site VPN → Type = Hub
@@ -88,9 +98,9 @@ A "Deny all" at the bottom blocks anything not explicitly allowed above it.
 |---------|-------|-----|
 | Tunnel shows `Not connected` | MX uplink on both sides | Check WAN connectivity at both sites |
 | Tunnel up but no traffic | Firewall rules | Check L3 rules aren't blocking VPN subnet traffic |
-| Intermittent drops | Packet loss on WAN | Open ISP ticket; check MX event log |
+| Intermittent drops | Packet loss on WAN | Check MX event log; prepare operator escalation evidence without submitting |
 | Latency high | WAN saturation | Check client bandwidth usage; check QoS rules |
-| Can't reach specific subnet | Subnet not advertised | Add subnet to VPN participation list on spoke |
+| Can't reach specific subnet | Subnet not advertised | Route the reviewed subnet-participation change to `/meraki-site-vpn` |
 
 ---
 
@@ -110,6 +120,8 @@ A "Deny all" at the bottom blocks anything not explicitly allowed above it.
 
 ### SSID Configuration
 
+> **PREVIEW ONLY [network-ssid-config]:** Route any SSID, VLAN, radio, or bitrate change to `/wifi-issue`. This module cannot save wireless configuration.
+
 1. Wireless → SSIDs → click SSID name
 2. Key settings:
    - Security: WPA2/WPA3 Enterprise (Radius) or WPA2 PSK
@@ -127,11 +139,13 @@ A "Deny all" at the bottom blocks anything not explicitly allowed above it.
 | One area has no signal | AP offline? Dead zone? Need additional AP? |
 
 **Channel utilization threshold:** > 70% utilization on a channel = likely causing congestion.
-Fix: Wireless → RF profiles → adjust channel width or enable auto-channel.
+Plan the desired RF change, then route it to `/wifi-issue`; this module cannot apply it.
 
 ### QoS for VoIP
 
 VoIP traffic should be prioritized over bulk data to prevent call quality issues.
+
+> **PREVIEW ONLY [network-voip-qos]:** Route any traffic-shaping or bandwidth-limit change to `/lan-wan`. This module cannot save QoS configuration.
 
 1. Security & SD-WAN → SD-WAN & traffic shaping
 2. Application-based traffic shaping:
@@ -145,11 +159,13 @@ VoIP traffic should be prioritized over bulk data to prevent call quality issues
 
 ### Reporting a Circuit Outage
 
+> **PREVIEW ONLY [network-vendor-contact]:** Gather evidence here, but do not contact or submit a case to a provider from this module. Use `/jira-create` only for an operator-approved internal record; vendor submission remains an explicit operator action outside this reference.
+
 When a site loses internet:
-1. Confirm it is the ISP circuit (not internal routing): connect a laptop directly to the MX WAN port
+1. Confirm the likely ISP boundary with read-only dashboard and event-log evidence; do not disconnect production equipment from this reference
 2. Meraki → Appliance status → check uplink status and loss
 3. Check ISP status page for known outages
-4. Open an ISP support ticket:
+4. Prepare the following draft for an operator who separately authorizes vendor contact:
    > "We are experiencing a complete outage on our [@Aegion_ISP] circuit at [SITE_ADDRESS].
    > Account: [ACCOUNT_NUMBER]. Circuit ID: [CIRCUIT_ID].
    > Outage began: [DATE/TIME]. All internal devices confirmed — issue is WAN uplink.

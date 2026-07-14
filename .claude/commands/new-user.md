@@ -1,8 +1,11 @@
 ---
 description: Full new-user onboarding — AD → sync → license → MFA → mail/groups → apps → devices → site/facilities → wrap-up. Medium-depth GUI steps, why-footer, one-concept. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /new-user
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 CRITICAL: Do NOT ask for employee details, names, emails, departments, or any PII. Deliver the FULL checklist IMMEDIATELY using only placeholders. Never prompt for user information.
 
@@ -16,6 +19,8 @@ Steps marked **[if applicable]** depend on role/department — skip with a note 
 
 ### STEP 1 — Create user in on-prem AD
 
+> **PREVIEW ONLY [new-user-step-01]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** ADUC (`dsa.msc`) on a domain-joined machine
 
 1. Correct OU → right-click → **New → User** → `[FIRST_NAME]` `[LAST_NAME]`, logon `[first.last]`
@@ -26,20 +31,16 @@ Steps marked **[if applicable]** depend on role/department — skip with a note 
 <summary>PowerShell — the scale version</summary>
 
 ```powershell
-# Prompts securely; the temporary password is never embedded in script text or shell history
-$TemporaryPassword = Read-Host "Enter the temporary password" -AsSecureString
-
-# Creates the AD user with all attributes in one shot
-New-ADUser `
-  -Name "[FIRST_NAME] [LAST_NAME]" -GivenName "[FIRST_NAME]" -Surname "[LAST_NAME]" `
-  -SamAccountName "[first.last]" -UserPrincipalName "[UPN]" `
-  -Title "[JOB_TITLE]" -Department "[DEPARTMENT]" -Manager "[MANAGER_SAM]" `
-  -AccountPassword $TemporaryPassword `
-  -ChangePasswordAtLogon $true -Enabled $true `
-  -Path "OU=Staff,DC=[ORG],DC=[TLD]"   # OU must be inside Entra Connect sync scope
-
-# Removes the in-memory variable after the account is created
-Remove-Variable TemporaryPassword
+# PREVIEW ONLY [new-user-ad-create] — the creation template is intentionally commented and cannot create an identity when pasted.
+# $TemporaryPassword = Read-Host "Enter the temporary password" -AsSecureString
+# New-ADUser `
+#   -Name "[FIRST_NAME] [LAST_NAME]" -GivenName "[FIRST_NAME]" -Surname "[LAST_NAME]" `
+#   -SamAccountName "[first.last]" -UserPrincipalName "[UPN]" `
+#   -Title "[JOB_TITLE]" -Department "[DEPARTMENT]" -Manager "[MANAGER_SAM]" `
+#   -AccountPassword $TemporaryPassword `
+#   -ChangePasswordAtLogon $true -Enabled $true `
+#   -Path "OU=Staff,DC=[ORG],DC=[TLD]"
+# Remove-Variable TemporaryPassword
 ```
 </details>
 
@@ -48,13 +49,16 @@ Remove-Variable TemporaryPassword
 
 ### STEP 2 — Sync to Entra ID
 
+> **PREVIEW ONLY [new-user-step-02]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** AD Connect server → forced delta sync lands in **3–5 min**; the natural cycle is **~30 min**.
 
 <details>
 <summary>PowerShell — force delta sync (run ON the AD Connect server)</summary>
 
 ```powershell
-Start-ADSyncSyncCycle -PolicyType Delta   # pushes only changed objects (fast)
+# PREVIEW ONLY [new-user-delta-sync] — non-executing connector-sync reference.
+# Start-ADSyncSyncCycle -PolicyType Delta
 ```
 </details>
 
@@ -63,12 +67,16 @@ Start-ADSyncSyncCycle -PolicyType Delta   # pushes only changed objects (fast)
 
 ### STEP 3 — Assign M365 Business Premium license
 
+> **PREVIEW ONLY [new-user-step-03]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** admin.microsoft.com → Users → Active users → user → **Licenses and apps** → check **Business Premium** → Save
 
 ✅ Verify: mailbox provisions within ~10 min (Exchange admin → Mailboxes).
 **Why:** The license is what materializes the mailbox, OneDrive, Teams, and Intune enrollment rights. Direct OR group-based — never both (removal conflicts later).
 
 ### STEP 4 — MFA registration (admin side)
+
+> **PREVIEW ONLY [new-user-step-04]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Portal:** user self-registers at **aka.ms/mfasetup** (Microsoft Authenticator) at first sign-in.
 SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication methods** → **+ Add method** → Phone.
@@ -82,12 +90,16 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 5 — Security groups
 
+> **PREVIEW ONLY [new-user-step-05]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** on-prem-synced groups → add in **ADUC** (cloud edits get overwritten). Cloud groups → entra.microsoft.com → Groups → `[DEPT]` group → Members → Add.
 
 ✅ Verify: Entra → user → Groups shows the full set after sync.
 **Why:** Groups drive shares, app access, and Intune assignments — wrong source = membership silently reverts at next sync.
 
 ### STEP 6 — Distribution lists + M365 groups
+
+> **PREVIEW ONLY [new-user-step-06]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Portal:** Exchange admin (admin.exchange.microsoft.com) → **Groups** → `[DEPT_DL]` → Members → Add `[UPN]`. On-prem-synced DLs → add in ADUC instead.
 
@@ -96,6 +108,8 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 7 — Shared-mailbox delegation **[if dept uses one]**
 
+> **PREVIEW ONLY [new-user-step-07]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** Exchange admin → Mailboxes → `[SHARED_MAILBOX]` → **Delegation** → **Full Access** → Add `[UPN]` (+ **Send As** if the dept sends from it).
 
 ✅ Verify: mailbox auto-maps in user's Outlook within ~1 hr.
@@ -103,12 +117,16 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 8 — SharePoint / Teams department access
 
+> **PREVIEW ONLY [new-user-step-08]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** check which mechanism drives membership FIRST — if the dept Team/site is group-connected, Step 5/6 already granted it. Otherwise: `[DEPT]` site → Settings → **Site permissions** → Add members.
 
 ✅ Verify: user opens the dept site/Team. **Never double-grant** (direct + group) — orphaned direct grants survive offboarding.
 **Why:** Group-connected sites inherit membership; direct grants are invisible to group audits.
 
 ### STEP 9 — Email signature
+
+> **PREVIEW ONLY [new-user-step-09]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Portal:** apply the org-standard signature (template in the IT intro doc) — user pastes into Outlook → Settings → Signatures, or it deploys via the org's signature mechanism.
 
@@ -121,6 +139,8 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 10 — [@Aegion_VOIP] extension
 
+> **PREVIEW ONLY [new-user-step-10]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** [@Aegion_VOIP_URL] → Users → **Add user** → name, `[UPN]`, `[EXTENSION]`, voicemail PIN.
 
 ⚠️ Check the user's **site migration status** first — [@Aegion_SITE_2] / [@Aegion_SITE_3] are still mid-migration; confirm the site is live on [@Aegion_VOIP] before provisioning.
@@ -130,6 +150,8 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 11 — Zoom account
 
+> **PREVIEW ONLY [new-user-step-11]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** Zoom admin → **User Management** → Add user → `[UPN]` → assign `[LICENSE_TYPE]`.
 
 ✅ Verify: user accepts the invite email and signs in.
@@ -137,12 +159,16 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 12 — Adobe **[if role needs it]**
 
+> **PREVIEW ONLY [new-user-step-12]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** adminconsole.adobe.com → Users → **Add user** → `[UPN]` → assign `[PRODUCT_PROFILE]`. User installs apps via **Creative Cloud** after the invite email.
 
 ✅ Verify: user signs into Creative Cloud and the profile's apps are installable.
 **Why:** Adobe licensing is per product profile — the invite without a profile gives a login with no apps.
 
 ### STEP 13 — Conditional per-role accounts **[if applicable at your org]**
+
+> **PREVIEW ONLY [new-user-step-13]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 - **1Password** — confirm rollout state (dept heads vs all staff) before seating.
 - **Timesheet / HR app** — confirm whether IT or HR provisions; if IT, create the account per that system's admin guide.
@@ -158,6 +184,8 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 
 ### STEP 14 — Windows device (Intune)
 
+> **PREVIEW ONLY [new-user-step-14]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** sign into the PC with `[UPN]` during OOBE (Entra join → auto-enroll), or Settings → Accounts → **Access work or school** → Connect.
 
 1. Rename to convention: intune.microsoft.com → Devices → `[DEVICE_NAME]` → **Rename** → `DT-[FirstName],[LastName]` / `LT-[FirstName],[LastName]`
@@ -167,6 +195,8 @@ SMS fallback: entra.microsoft.com → Users → `[UPN]` → **Authentication met
 **Why:** Compliance gates CA access; KFM is the difference between "device died, restored from cloud" and "device died, files gone."
 
 ### STEP 15 — Mobile phone setup — **required for EVERY hire**
+
+> **PREVIEW ONLY [new-user-step-15]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 Every staff member runs MFA from a phone — pick the path, never skip the step:
 
@@ -190,6 +220,8 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 16 — Network drives / file shares
 
+> **PREVIEW ONLY [new-user-step-16]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** map the `[DEPARTMENT]` shares per the drive-mapping standard (GPO or manual).
 **Finance hires:** [@Aegion_FINANCE_SERVER] access goes through **senior IT approval** — request it, don't grant directly.
 
@@ -198,12 +230,16 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 17 — Printers (per site)
 
+> **PREVIEW ONLY [new-user-step-17]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** add the user's site printers (print server or direct-IP per site standard).
 
 ✅ Verify: test page from the user's profile.
 **Why:** Printers are per-site/VLAN — a profile copied from another site prints into the void.
 
 ### STEP 18 — Wi-Fi (staff SSID)
+
+> **PREVIEW ONLY [new-user-step-18]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Steps:** join the device to the staff SSID at the user's site (credentials per site standard — never write the PSK in the ticket).
 
@@ -212,6 +248,8 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 19 — Client VPN **[remote-capable roles only]**
 
+> **PREVIEW ONLY [new-user-step-19]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** provision Meraki client VPN access per the remote-access standard. **Do NOT provision the legacy remote tool — it is being retired.**
 
 ✅ Verify: user connects from off-site and reaches the dept share.
@@ -219,12 +257,16 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 20 — Alarm code ([@Aegion_ALARM])
 
+> **PREVIEW ONLY [new-user-step-20]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** request a per-site user code via the **office manager** (provisioning is coordinated there, not direct). ⚠️ System is **mid-upgrade** (landline → internet monitoring) — confirm the site's current state before promising a working code.
 
 ✅ Verify: office manager confirms the code is active for the user's site.
 **Why:** Physical security changes are coordinated, never assumed — the vendor relationship runs through facilities.
 
 ### STEP 21 — Badge / door access **[if applicable at your org]**
+
+> **PREVIEW ONLY [new-user-step-21]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 **Steps:** request via the owning party (facilities/office manager) for the user's site(s).
 
@@ -237,6 +279,8 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 22 — Jira Service Management customer
 
+> **PREVIEW ONLY [new-user-step-22]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Portal:** JSM → the [@Aegion_JIRA_SPACE] service desk → **Customers** → Add `[UPN]` (required — every staff member must be able to submit tickets).
 
 ✅ Verify: user can open the help portal and raise a test request.
@@ -244,12 +288,16 @@ Every staff member runs MFA from a phone — pick the path, never skip the step:
 
 ### STEP 23 — Asset inventory
 
+> **PREVIEW ONLY [new-user-step-23]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** log `[DEVICE_NAME]`, serial, asset tag, and assigned user in the inventory (even if it's a spreadsheet today — the habit is the point).
 
 ✅ Verify: inventory row exists and matches Intune.
 **Why:** Offboarding, warranty, and insurance all start from "what do they have" — unlogged assets never come back.
 
 ### STEP 24 — Welcome email + credentials
+
+> **PREVIEW ONLY [new-user-step-24]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 Send to the user's **personal email**: work email `[UPN]`, first sign-in at office.com, MFA instructions (install **Microsoft Authenticator** first), `[EXTENSION]` + Unite app note.
 ⚠️ Deliver `[TEMP_PASSWORD]` via a **separate channel** (phone/SMS) — never username and password in one message.
@@ -259,12 +307,16 @@ Send to the user's **personal email**: work email `[UPN]`, first sign-in at offi
 
 ### STEP 25 — Manager notification + day-1 IT intro
 
+> **PREVIEW ONLY [new-user-step-25]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **Steps:** notify `[MANAGER_NAME]` the account is live; send/attach the IT intro doc (how to reach IT, JSM portal, signature template, MFA expectations).
 
 ✅ Verify: manager acknowledges; intro doc delivered.
 **Why:** The manager is the first escalation path on day one — they need to know what "ready" includes.
 
 ### STEP 26 — First sign-in verification
+
+> **PREVIEW ONLY [new-user-step-26]:** This checklist step is not an execution authorization. Move the intended change to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 - [ ] User signs in at office.com → password change + MFA registration succeed
 - [ ] Outlook + Teams load mail/chat
@@ -289,6 +341,8 @@ Send to the user's **personal email**: work email `[UPN]`, first sign-in at offi
 - [ ] First sign-in verified end-to-end · Jira ticket logged
 
 ## 📝 Jira-ready note
+
+Use the completed template only after every claimed checklist item and first-sign-in read-back above is verified. Otherwise use a **Partial state — keep open** note that lists verified, pending, and failed items without claiming completion.
 
 > Onboarding completed for [FIRST_NAME] [LAST_NAME] ([DEPARTMENT]), start [START_DATE]. Identity: AD→Entra synced, Business Premium, MFA registered. Access: groups/DLs/[SHARED_MAILBOX]/SharePoint per dept. Comms: [@Aegion_VOIP] ext [EXTENSION], Zoom, [Adobe/per-role apps or N/A]. Devices: [DEVICE_NAME] compliant + KFM; mobile [corp phone enrolled + app-grouped / BYOD Authenticator + Outlook MAM]. Site: drives/printers/Wi-Fi[/VPN], alarm code via office manager. JSM customer added; asset logged; credentials delivered split-channel. First sign-in verified.
 

@@ -4,7 +4,7 @@ description: Draft a sanitized Jira ticket response for common investigation, re
 
 IMPORTANT: Do NOT ask for employee details, names, emails, departments, or any identifying info. Deliver the FULL procedure IMMEDIATELY using only placeholders like [FIRST_NAME], [UPN], [DEVICE_NAME], [DEPARTMENT]. The user will substitute real values themselves.
 
-Draft a professional Jira ticket reply for [YOUR_ORG] IT. Ask what the ticket is about and what tone. Never ask for employee details.
+Draft a professional Jira ticket reply for [@Aegion] IT. Ask what the ticket is about and what tone. Never ask for employee details.
 
 ---
 

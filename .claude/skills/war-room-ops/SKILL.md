@@ -1,46 +1,48 @@
 ---
 name: war-room-ops
-description: Operating pattern for the read-only Aegis D Hermes war-room bridge — the /war-room, /morning-brief, /portfolio-status, /dashboard-render, /alpha-signal, /hermes-status command family, with lane + placeholder discipline.
+description: Operating pattern for the Aegis D Hermes war-room bridge, including read-only views, confirmed local copies, and the no-clobber dashboard render.
 ---
 
 # Skill: war-room-ops
 
-**Trigger:** `/war-room-ops` or "war room", "dashboard", "morning brief", "portfolio snapshot", "alpha signal", "is Hermes up" — any time [ADMIN_NAME] reaches for the Hermes-hosted trading war room from the laptop.
+**Trigger:** `/war-room-ops` or “war room”, “dashboard”, “morning brief”, “portfolio snapshot”, “alpha signal”, or “is Hermes up”.
 
-**Goal:** Surface Hermes's war-room outputs on the laptop **read-only and safely**, staying in lane (finance is Hermes's domain — Aegis surfaces, doesn't advise).
+**Goal:** Surface Hermes outputs safely while keeping finance in Hermes's lane and every real local/remote effect accurately classified.
 
-> Maps to the IT-ops family. Captures the new IT pattern from the v8 build: a read-only SSH bridge to a peer agent's data products.
+## Command family
 
----
-
-## The command family (all read-only by design)
-| Command | What it does | Touches Hermes how |
-|---------|--------------|--------------------|
-| `/war-room` | Open the latest dashboard in the browser | `ls` + `scp` pull (or open `WAR_ROOM_URL`) |
-| `/morning-brief` | Print today's Daily Hunt brief | `cat` / `hermes brief --latest` |
-| `/portfolio-status` | Core-holds snapshot (core tickers from holdings.yml) | snapshot/quote read |
-| `/dashboard-render` | Generate a fresh dashboard | runs render skill — **additive artifact only** |
-| `/alpha-signal TICKER` | One-line signal read | skill query |
-| `/hermes-status` | SSH ping + cron check + last-render age | `whoami`/`crontab -l`/`ls` |
+| Command | What it does | Effect boundary |
+|---|---|---|
+| `/war-room` | Open the latest dashboard | Constant remote selector, then separately confirmed strict local copy and browser launch; or one validated URL launch |
+| `/morning-brief` | Print the current brief | Remote read; proposed audit line is preview-only |
+| `/portfolio-status` | Show the current holdings snapshot | Remote read; proposed audit line is preview-only |
+| `/dashboard-render` | Generate one dated dashboard | Confirmed R1 remote write only when the exact destination is absent |
+| `/alpha-signal TICKER` | Request a one-line signal | Cache-refresh path is preview-only until exact remote cache effects are documented |
+| `/hermes-status` | Check SSH, cron, and render age | Remote read; proposed audit line is preview-only |
 
 ## Operating rules
-1. **Read-only to Hermes.** Only `/dashboard-render` writes (a new timestamped HTML — additive, never a state mutation or service restart). Everything else is `cat`/`ls`/`scp`-pull/query. Never `systemctl`, never edit cron, never place a trade.
-2. **Lane discipline.** Finance/markets is Hermes's lane. These commands *surface* Hermes's output; they don't add Aegis trade opinions. For depth, route to `/ask-hermes`. (See the four-agent stack in CLAUDE.md.)
-3. **Placeholder discipline.** Hermes host/paths are `[HERMES_*]` placeholders resolved at runtime via `~/.ssh/config` + env vars. **Never** write the real host/IP/paths into chat, commits, or any artifact (Koinon SR-8 / §4).
-4. **Operator's own data.** Briefs/snapshots are [ADMIN_NAME]'s financial data shown to [ADMIN_NAME]. Never forward to an end user or external surface.
-5. **Fail soft, never block.** SSH down ⇒ say so plainly and stop; don't fabricate prices, signals, or a render. Point to `/hermes-status` first when anything comes back empty.
-6. **Auth = ssh-agent.** Same loaded key as `/ask-hermes`. On auth error, point to `ssh-add -l` / reload — never read the key file.
-7. **Log every call.** One-liner to `hermes-escalation-log.md`: `[ts] /<command> <args> → <result>`.
 
-## Verification (prove it worked)
-- `/hermes-status` returns ✅ reachable + both cron jobs ✅ + a recent render date.
-- `/war-room` opens a file/URL with a render timestamp (not a 404 / empty).
-- `/dashboard-render` reports a new dated HTML filename and exits 0.
+1. **Classify real effects.** `/dashboard-render` is a remote state mutation and refuses a same-date collision. `/war-room` is a remote read followed by independently confirmed local copy/open effects. Never describe either as universally read-only.
+2. **Do not hide cache writes.** The alpha-signal skill may refresh a remote cache. Until its exact objects and rollback are verified, that live refresh remains preview-only; use the cached `/portfolio-status` view for read-only context.
+3. **Static remote commands only.** User/date/path data travels through validated stdin payloads. Never interpolate it into an SSH command or trust raw `ls` output as an `scp` operand.
+4. **Lane discipline.** Surface Hermes output without adding an Aegis trading recommendation. Never place trades, edit cron/configuration, or restart a service.
+5. **Placeholder discipline.** Keep host, account, and paths as `[HERMES_*]` placeholders in source and shared output. Never disclose resolved private values.
+6. **Authentication boundary.** Use the loaded SSH agent with no TTY, no agent/X11 forwarding, cleared forwarding, and batch authentication. Never read a private-key file.
+7. **Fail closed.** Invalid input, a collision, nonzero exit, unexpected output, or confirmation mismatch stops the current phase. Do not broaden a selector or retry automatically.
+8. **Audit line is preview-only.** Return a hash-only proposed record. Do not append to `hermes-escalation-log.md` without a separate exact local-write gate.
+
+## Verification
+
+- `/war-room` reports the validated URL or local GUID path plus SHA-256; a copy is not proof that the separate open gate passed.
+- `/dashboard-render` reports the exact expected basename, remote exit zero, regular/non-symlink status, and nonzero size.
+- Read-only commands report freshness and source timestamp without claiming a local log write.
 
 ## Failure triage
+
 | Symptom | First check |
-|---------|-------------|
-| Brief/dashboard empty | `/hermes-status` → is the cron registered + last render fresh? |
-| SSH "Permission denied" | `ssh-add -l` — is the key loaded? Reload with passphrase. |
-| Render times out | Fetchers likely rate-limited — retry once, then check Hermes disk/logs |
-| Stale prices | Snapshot shows "data as of" — if old, the price cache didn't refresh |
+|---|---|
+| Brief/dashboard empty | `/hermes-status`; do not fabricate current data |
+| SSH authentication failure | `ssh-add -l`; never read or print the key |
+| Render collision | Stop; an overwrite requires a separate R2 checkpoint and approval |
+| Copy succeeded but open declined | Report the exact local path and hash; leave it unopened |
+| Stale cached signal | Report its timestamp; do not silently trigger a refresh |

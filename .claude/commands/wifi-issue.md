@@ -1,8 +1,11 @@
 ---
 description: Systematic Wi-Fi troubleshooting decision tree for a Meraki MR environment — symptom → isolation → ranked causes → fix → verification. Meraki dashboard first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /wifi-issue
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Isolate first — **one client, one AP, or site-wide?** That single question routes the whole tree. Meraki dashboard → Wireless tells you most of it.
 
@@ -14,6 +17,8 @@ description: Systematic Wi-Fi troubleshooting decision tree for a Meraki MR envi
 - **Site-wide / all SSIDs** → controller/WAN-side (likely a `/lan-wan` problem, not Wi-Fi).
 
 ### 2. "Can't connect" (won't associate)
+
+> **PREVIEW ONLY [wifi-client-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 Ranked causes → fix:
 1. **Wrong PSK / expired creds** → re-enter; for 802.1X check the user's account/MFA.
 2. **SSID not broadcast** → Meraki → Wireless → SSIDs → enabled? AP radio up? (Wireless → Access points → `[AP_NAME]` status green.)
@@ -21,12 +26,16 @@ Ranked causes → fix:
 4. **Band/driver** → forget network, update Wi-Fi driver, retry.
 
 ### 3. "Connected, no internet"
+
+> **PREVIEW ONLY [wifi-network-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 1. **DHCP** — did it get an IP/gateway? (Client details → IP.) Scope exhausted? → check DHCP on the MX/switch.
 2. **DNS** — IP but no name resolution → test 8.8.8.8 vs name.
 3. **Upstream/WAN** — if site-wide, jump to `/lan-wan` (MX uplink/ISP).
 4. **Captive portal/guest** — guest SSID stuck on splash → Wireless → splash settings.
 
 ### 4. "Slow / intermittent drops"
+
+> **PREVIEW ONLY [wifi-radio-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 1. **RF/channel** — Wireless → RF spectrum / channel utilization; high interference → re-channel or check for rogue APs.
 2. **Signal** — client RSSI low (far/walls) → AP placement/power.
 3. **Overloaded AP** — client count high → load-balance / add AP.

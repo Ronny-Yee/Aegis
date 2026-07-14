@@ -1,8 +1,11 @@
 ---
 description: Check Meraki MX site-to-site VPN tunnel status, latency, advertised subnets, and topology — troubleshoot down tunnels including NAT-T and subnet conflicts. Meraki dashboard first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /meraki-vpn-status
+
+> **Execution boundary:** Status, latency, route, and firewall inspection are read-only. Adding advertised subnets, changing peer configuration, re-IPing a VLAN, or saving topology/firewall changes is planning-only here and must route to `/meraki-site-vpn` or another separately reviewed runbook with exact network IDs, pre-state, rollback, and action-specific confirmation.
 
 **Verdict:** Most VPN tunnel failures come from an MX uplink being down, a mismatched or overlapping subnet, or a firewall rule blocking UDP 500/4500. Check the VPN status page first — green/amber/red tells you which peer to dig into.
 
@@ -31,12 +34,12 @@ On the VPN status page, click any peer row to expand — you'll see a latency/lo
 **3. Verify local subnets advertised**
 `Meraki dashboard → [Hub Network] → Security & SD-WAN → Site-to-site VPN → Local networks`
 - Each subnet you want remote sites to reach must be listed here with "VPN mode: Yes"
-- Missing subnet = remote site can't reach that VLAN. Add it and save — tunnel updates within ~60 seconds
+> **PREVIEW ONLY [meraki-vpn-advertise-subnet]:** A missing subnet explains the routing gap, but adding/saving it is not authorized here. Route the exact network, VLAN/subnet, and peer scope through `/meraki-site-vpn`.
 
 **4. Verify remote subnets received**
 On the VPN status page, click a peer → expand "Remote subnets"
 - The subnets the peer is advertising should all appear here
-- Missing remote subnet = routing gap. Fix on the peer MX (Step 3 on that device)
+> **PREVIEW ONLY [meraki-vpn-peer-subnet]:** A missing remote subnet is a routing gap. Any peer-MX change is a separate reviewed action and is not authorized here.
 
 **5. VPN topology — hub-and-spoke vs full mesh**
 `Meraki dashboard → Security & SD-WAN → Site-to-site VPN → Organization-wide settings`
@@ -62,7 +65,7 @@ Switch to the peer's network in the dashboard and check its Appliance status
 **Step 6d — Overlapping or duplicate subnets**
 `Meraki dashboard → Security & SD-WAN → Site-to-site VPN → Local networks` on both MXes
 - Two sites advertising the same subnet (e.g., 192.168.1.0/24 on both sides) will cause routing failures
-- Fix: re-IP one site's VLAN so subnets are unique across all locations
+> **PREVIEW ONLY [meraki-vpn-vlan-readdress]:** Re-IPing a VLAN is a broad network change. Prepare a separate migration plan with exact VLAN/network IDs, dependencies, rollback, and outage approval; do not execute it from this status command.
 - Common duplicates: 192.168.1.x, 10.0.0.x — check all 4 sites
 
 **Step 6e — Firewall rules blocking VPN traffic**

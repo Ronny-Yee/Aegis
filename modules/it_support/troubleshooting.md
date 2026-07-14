@@ -1,5 +1,9 @@
 # Troubleshooting — Diagnostic Trees
 
+## Execution boundary
+
+This module is planning/reference only and never authorizes a state change. Read-only diagnostics remain available. Route changes to the named canonical command (`/password-reset`, `/mfa-issue`, `/ad-connect`, `/email-quarantine`, `/email-to-spam`, `/new-device-setup`, `/lan-wan`, `/meraki-site-vpn`, `/wifi-issue`, `/mailbox-permissions`, `/outlook-issue`, `/onedrive-issue`, `/intune-compliance`, or `/conditional-access`). The destination command must independently resolve its target and require an action-specific exact confirmation.
+
 Structured diagnostic flows for the 10 most common ticket types.
 Each tree identifies root cause before prescribing a fix.
 
@@ -7,20 +11,22 @@ Each tree identifies root cause before prescribing a fix.
 
 ## T-01 — User Cannot Sign In
 
+> **PREVIEW ONLY [troubleshoot-signin-actions]:** Route account/password actions to `/password-reset`, MFA actions to `/mfa-issue`, policy changes to `/conditional-access`, and connector sync to `/ad-connect`. The tree below cannot authorize them.
+
 ```
 User reports: "Can't sign in" or "account locked"
 │
 ├─ Is sign-in blocked?
 │  Entra → Users → [UPN] → Edit properties → Block sign-in
-│  YES → Unblock (if legitimate request) or escalate if unexpected
+│  YES → Route any unblock action to /password-reset; otherwise escalate
 │
 ├─ Is password correct?
 │  admin.microsoft.com → Users → [UPN] → Sign-in logs → look for "InvalidPassword"
-│  YES (wrong pw) → Reset password (WF-04)
+│  YES (wrong pw) → Route the reset to /password-reset
 │
 ├─ Is MFA failing?
 │  Sign-in log shows "MFA required but no method registered" or "MFA denied"
-│  YES → Delete MFA methods + re-register (WF-03)
+│  YES → Route method deletion to /mfa-issue; re-registration remains user-driven
 │
 ├─ Is Conditional Access blocking?
 │  Sign-in log → Conditional Access tab → policy that applied → result = "Failure"
@@ -28,7 +34,7 @@ User reports: "Can't sign in" or "account locked"
 │
 └─ Account exists?
    Entra → Users → search [UPN] → not found?
-   If hybrid AD: check on-prem ADUC. Did the AD sync run? Force sync.
+   If hybrid AD: check on-prem ADUC. Did the AD sync run? Route any forced sync to /ad-connect.
 ```
 
 ### Key Portal Path
@@ -39,12 +45,14 @@ The `Conditional Access` tab in each sign-in event shows exactly which policy bl
 
 ## T-02 — New User Not Appearing in M365
 
+> **PREVIEW ONLY [troubleshoot-new-user-sync]:** Keep diagnosis read-only and route any forced connector sync to `/ad-connect`.
+
 ```
 Account created in on-prem AD but not visible in Entra/M365
 │
 ├─ Has Entra Connect synced?
 │  Entra → Hybrid management → Microsoft Entra Connect → Last sync time
-│  If > 30 min ago → force sync: Start-ADSyncSyncCycle -PolicyType Delta
+│  If > 30 min ago → route the reviewed sync request to /ad-connect
 │
 ├─ Is the account in the right OU?
 │  Entra Connect only syncs specific OUs (configured during setup)
@@ -59,18 +67,20 @@ Account created in on-prem AD but not visible in Entra/M365
    Common: duplicate UPN, duplicate proxy address
 ```
 
-**Resolution time:** After forcing sync, allow 3–5 minutes for Entra to reflect changes.
+**Resolution time:** After a separately gated sync, allow 3–5 minutes for Entra to reflect changes.
 
 ---
 
 ## T-03 — Email Not Received / Missing
+
+> **PREVIEW ONLY [troubleshoot-email-actions]:** Route quarantine release to `/email-quarantine` and any sender/domain allow change to `/email-to-spam`. This tree cannot authorize either action.
 
 ```
 User reports: "I'm not getting emails from [sender]" or "email is missing"
 │
 ├─ Check quarantine first
 │  security.microsoft.com → Email & collaboration → Review → Quarantine
-│  Search by recipient or sender — if found, release
+│  Search by recipient or sender — if found, route any release to /email-quarantine
 │
 ├─ Run a message trace
 │  EAC → Mail flow → Message trace
@@ -88,13 +98,15 @@ User reports: "I'm not getting emails from [sender]" or "email is missing"
 │
 └─ Check safe senders list
    If sender is being quarantined repeatedly:
-   security.microsoft.com → Policies → Anti-spam → allow list → add sender domain
+   Route a reviewed sender/domain allow change to /email-to-spam
    ⚠️ Only add trusted senders — this bypasses all filtering
 ```
 
 ---
 
 ## T-04 — Device Not Enrolling in Intune
+
+> **PREVIEW ONLY [troubleshoot-device-enrollment]:** Route enrollment or device-identity changes to `/new-device-setup`; this tree is diagnostic only.
 
 ```
 User's device fails to enroll in Intune during setup
@@ -128,6 +140,8 @@ User's device fails to enroll in Intune during setup
 ---
 
 ## T-05 — Slow Internet (Site-Specific)
+
+> **PREVIEW ONLY [troubleshoot-network-actions]:** Route network changes to `/lan-wan`, VPN changes to `/meraki-site-vpn`, and wireless changes to `/wifi-issue`. This tree is diagnostic only.
 
 ```
 Users at one site report: "internet is slow" or "Teams keeps dropping"
@@ -193,6 +207,8 @@ User reports: "no dial tone" or "can't make calls"
 
 ## T-07 — Shared Mailbox Not Appearing in Outlook
 
+> **PREVIEW ONLY [troubleshoot-shared-mailbox-client]:** Route delegation changes to `/mailbox-permissions` and client-profile changes to `/outlook-issue`; this tree cannot authorize either action.
+
 ```
 User granted access to shared mailbox but it doesn't show in Outlook
 │
@@ -202,9 +218,7 @@ User granted access to shared mailbox but it doesn't show in Outlook
 │
 ├─ Auto-mapping vs manual add
 │  Auto-mapping is enabled by default — mailbox should appear automatically within 20–30 min
-│  If user re-logged in and it's still not there → try manual add:
-│    Outlook → File → Account Settings → Account Settings → More Settings → Advanced
-│    → Add → type shared mailbox name
+│  If user re-logged in and it's still not there → route client remediation to /outlook-issue
 │
 ├─ Has it been long enough?
 │  Permission changes take up to 60 minutes to fully replicate
@@ -219,6 +233,8 @@ User granted access to shared mailbox but it doesn't show in Outlook
 ---
 
 ## T-08 — MFA Prompt Not Appearing (User Bypassing MFA)
+
+> **PREVIEW ONLY [troubleshoot-mfa-policy]:** Route authentication-method changes to `/mfa-issue` and policy changes to `/conditional-access`; this tree remains read-only.
 
 ```
 User signs in without being prompted for MFA
@@ -245,6 +261,8 @@ User signs in without being prompted for MFA
 
 ## T-09 — OneDrive Sync Issues
 
+> **PREVIEW ONLY [troubleshoot-onedrive-reset]:** Route any OneDrive reset or client restart to `/onedrive-issue`; this tree intentionally provides no executable reset command.
+
 ```
 User reports: "OneDrive isn't syncing" or "sync errors"
 │
@@ -259,9 +277,8 @@ User reports: "OneDrive isn't syncing" or "sync errors"
 │  "Not enough storage" → OneDrive quota full → check admin.microsoft.com
 │  "Account not connected" → user signed out → sign back in
 │
-├─ Reset OneDrive sync client (nuclear option — won't delete files)
-│  %localappdata%\Microsoft\OneDrive\onedrive.exe /reset
-│  Wait 2 min → OneDrive should restart and re-sync
+├─ OneDrive client reset may be considered only through /onedrive-issue
+│  This diagnostic tree intentionally provides no executable reset command
 │
 └─ Admin view of a user's OneDrive
    admin.microsoft.com → Users → [UPN] → OneDrive → Open
@@ -271,6 +288,8 @@ User reports: "OneDrive isn't syncing" or "sync errors"
 ---
 
 ## T-10 — Device Showing Non-Compliant in Intune
+
+> **PREVIEW ONLY [troubleshoot-compliance-sync]:** Route any device compliance sync or remediation to `/intune-compliance`; this tree remains diagnostic.
 
 ```
 User's device is flagged non-compliant, blocking access to apps
@@ -285,9 +304,8 @@ User's device is flagged non-compliant, blocking access to apps
 │  "Password required" → user has no screen lock set
 │  "Defender not active" → re-enable Windows Security
 │
-├─ Force a compliance re-check (after user fixes the issue)
-│  Intune → Devices → [device] → Sync
-│  Or on device: Settings → Accounts → Work or school → [account] → Info → Sync
+├─ If a compliance re-check is needed after remediation
+│  Route the reviewed device target to /intune-compliance
 │
 └─ Compliance grace period
    Is there a grace period configured? Intune → Compliance policies → [policy] → Properties

@@ -7,12 +7,12 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R0 for remote reads; R1 for the local audit-log append.
-- **Access:** credential-sensitive remote read and local write.
+- **Risk level:** R0 for remote reads; automatic local logging is disabled.
+- **Access:** credential-sensitive remote read with no local write.
 - **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does (plain English):** Surfaces the most recent morning brief Hermes generates — the "War Room Morning Brief — Core Holds" job (alpha-signal + daily-briefing across the holdings book). The full narrative brief is delivered to Telegram; this command confirms it ran, shows the morning dashboard artifact, and surfaces the brief text when it's readable on the box. Remote reads are read-only; the audit-log append is an R1 local write.
+**What this does (plain English):** Surfaces the most recent morning brief Hermes generates — the "War Room Morning Brief — Core Holds" job (alpha-signal + daily-briefing across the holdings book). The full narrative brief is delivered to Telegram; this command confirms it ran, shows the morning dashboard artifact, and surfaces the brief text when it is readable on the box. Remote reads are read-only; the proposed audit line is preview-only and is not written.
 
 **Operator types:**
 ```
@@ -66,6 +66,6 @@ $ssh = "C:\Windows\System32\OpenSSH\ssh.exe"
 - **No dashboard + no brief file:** report the job status only and point to Telegram.
 - **SSH auth error:** key must be in the Windows ssh-agent (see `/hermes-status`).
 
-## Logging
-Append to the repository-relative `.aegis-state/hermes-escalation-log.md`:
+## Proposed audit line
+Automatic append is **PREVIEW ONLY**. Return this hash-only/sanitized line without writing `.aegis-state/hermes-escalation-log.md`:
 `[YYYY-MM-DD HH:MM:SS] /morning-brief → <SHOWN date|JOB-FAILED|UNREACHABLE>`

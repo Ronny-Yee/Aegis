@@ -18,6 +18,8 @@ Help me update Aegis agent files, commands, or CLAUDE.md. Tell me what you want 
 
 ## Aegis Update — Agent File Maintenance
 
+> **Execution boundary:** This command prepares a scoped local edit plan and diff. The examples below do not authorize a write. Before editing, the operator must name the exact files and intended change; shared content, permission settings, unrelated dirty files, staging, commits, and pushes remain out of scope unless separately authorized.
+
 **What I can help you update:**
 
 | Target | What to change |
@@ -35,6 +37,7 @@ Help me update Aegis agent files, commands, or CLAUDE.md. Tell me what you want 
 ---
 
 **Common updates I handle:**
+> **PREVIEW ONLY [aegis-update-local-files]:** These are planning examples only. Resolve the exact file set and requested content, inspect the shared-tree state, and obtain the operator's scoped edit instruction before changing any file.
 - New slash command → I'll write the .md file and add it to the commands table in CLAUDE.md
 - Project status change → I'll update the active projects table in CLAUDE.md
 - New environment detail → I'll add it to the environment section

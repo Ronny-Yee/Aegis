@@ -202,7 +202,7 @@ test('uses argument-array Git execution and NUL-delimited filename lists', funct
   const source = fs.readFileSync(SCANNER, 'utf8');
   assert.match(source, /execFileSync\('git', args,/);
   assert.match(source, /\['diff'[\s\S]*?'-z'[\s\S]*?'--diff-filter=ACMRT'[\s\S]*?'--'\]/);
-  assert.match(source, /\['ls-files', '-z', '--'\]/);
+  assert.match(source, /\['ls-files', '-co', '--exclude-standard', '-z', '--'\]/);
   assert.match(source, /split\('\\0'\)/);
   assert.doesNotMatch(source, /\bexecSync\b/);
 });
@@ -407,6 +407,23 @@ test('--all scans tracked working-tree content that is not staged', function (t)
   assertRedacted(output, [secret, 'all-mode-marker', repo]);
 });
 
+test('--all scans a non-ignored untracked repair file', function (t) {
+  const repo = makeRepo(t);
+  const secret = syntheticSecret('U');
+  writeFile(repo, 'untracked-repair.md', `credential=${secret}\n`);
+
+  const stagedResult = runScanner(repo);
+  assertExit(stagedResult, 0);
+  assert.match(combinedOutput(stagedResult), /No staged files/);
+
+  const allResult = runScanner(repo, ['--all']);
+  const output = combinedOutput(allResult);
+  assertExit(allResult, 1);
+  assert.match(output, /File: untracked-repair\.md/);
+  assert.match(output, /GitHub token/);
+  assertRedacted(output, [secret, repo]);
+});
+
 test('--all fails closed when a tracked text file cannot be read', function (t) {
   const repo = makeRepo(t);
   const fileName = 'missing-tracked.md';
@@ -479,6 +496,90 @@ test('warning-only findings exit zero and keep the source line redacted', functi
   assert.match(output, /warning\(s\) found/);
   assert.match(output, /File: warning\.ps1/);
   assertRedacted(output, [sourceLine, sourceMarker, repo]);
+});
+
+test('warns on high-impact operational sinks that the legacy matcher missed', function (t) {
+  const repo = makeRepo(t);
+  const cases = [
+    ['Remove-Item -LiteralPath $queueFile -Force', /forced file deletion/],
+    ['Clear-MgDeviceManagementManagedDevice -ManagedDeviceId $deviceId', /managed-device factory reset/],
+    ['Invoke-MgRetireDeviceManagementManagedDevice -ManagedDeviceId $deviceId', /managed-device retire/],
+    ['Delete-QuarantineMessage -Identity "[MESSAGE_IDENTITY_GUID]"', /quarantine message deletion/],
+    ['Release-QuarantineMessage -Identity "[MESSAGE_IDENTITY_GUID]" -ReleaseToAll', /quarantine release to all recipients/],
+    ['Release-QuarantineMessage -Identity "[MESSAGE_IDENTITY_GUID]" -User "[USER@DOMAIN.COM]"', /recipient-scoped quarantine release/],
+    ['Remove-BlockedSenderAddress -SenderAddress "[USER@DOMAIN.COM]"', /restricted sender re-enable/],
+    ['Remove-ADGroupMember -Identity $group -Members $user -Confirm:$false', /AD group access revocation/],
+    ['Remove-PnPGroupMember -LoginName "[UPN]" -Group "[GROUP]"', /SharePoint access revocation/],
+    ['Update-MgUser -UserId "[UPN]" -AccountEnabled:$false', /cloud sign-in block/],
+    ['Update-MgUser -UserId "[UPN]" -PasswordProfile $profile', /cloud password reset/],
+    ['Set-ADAccountPassword -Identity "[UPN]" -Reset -NewPassword $password', /on-premises password reset/],
+    ['Invoke-MgInvalidateUserRefreshToken -UserId "[UPN]"', /refresh-token invalidation/],
+    ['Set-MgUserLicense -UserId "[UPN]" -BodyParameter $change', /license assignment change/],
+    ['New-ADUser -Name "[FIRST_NAME] [LAST_NAME]"', /directory account creation/],
+    ['New-Mailbox -Shared -Name "[MAILBOX]"', /mailbox creation/],
+    ['New-DistributionGroup -Name "[GROUP]"', /distribution group creation/],
+    ['Add-MailboxPermission -Identity "[MAILBOX]" -User "[UPN]"', /mailbox permission grant/],
+    ['Add-RecipientPermission -Identity "[MAILBOX]" -Trustee "[UPN]"', /Send As permission grant/],
+    ['New-MgGroupMember -GroupId "[GROUP_ID]" -DirectoryObjectId "[USER_ID]"', /group membership grant/],
+    ['Start-ADSyncSyncCycle -PolicyType Delta', /directory synchronization trigger/],
+    ['Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId "[POLICY_ID]"', /Conditional Access policy mutation/],
+    ['Set-SPOSite -Identity "https://[@Aegion_DOMAIN]" -LockState NoAccess', /SharePoint site mutation/],
+    ['Grant-CsTeamsMeetingPolicy -Identity "[UPN]" -PolicyName "[POLICY_NAME]"', /Teams policy assignment/],
+    ['New-MgDeviceManagementDeviceCompliancePolicyAssignment -DeviceCompliancePolicyId "[POLICY_ID]"', /compliance policy assignment/],
+    ['Set-Mailbox -Identity "[MAILBOX]" -Type Shared', /mailbox conversion/],
+    ['Install-Module Microsoft.Graph -Scope CurrentUser', /PowerShell module installation/],
+    ['node scripts/jira-client.js create --summary "[SUMMARY]" --execute --confirm "[CONFIRMATION]"', /external Jira mutation\/read boundary/],
+    ['node scripts/init-memory.js --execute --confirm "[CONFIRMATION]"', /local memory filesystem mutation/],
+    ['node scripts/security-audit.js --write --confirm "[CONFIRMATION]"', /local report creation/],
+    ['scp -- "[HERMES_SSH_USER]@[HERMES_HOST]:[HERMES_REMOTE_FILE]" $destination', /local or remote file transfer/],
+    ['chmod +x .git/hooks/pre-commit', /repository-local executable change/],
+    ['cp scripts/pre-commit-check.js.hook .git/hooks/pre-commit', /repository-local executable change/],
+    ['install -m 0755 scripts/pre-commit-check.js.hook .git/hooks/pre-commit', /repository-local executable change/],
+    ['mv pre-commit.reviewed .git/hooks/pre-commit', /repository-local executable change/],
+    ['tee .git/hooks/pre-commit < pre-commit.reviewed', /repository-local executable change/],
+    ['& $ssh @sshArgs $target $remoteCommand', /Dynamic SSH remote command invocation/],
+    ['git commit --no-verify', /pre-commit gate bypass/],
+  ];
+  const fixtureLines = cases.map(([line], index) => `${line} # scanner-source-${index}`);
+  writeFile(repo, 'missed-sinks.ps1', `${fixtureLines.join('\n')}\n`);
+  stageAll(repo);
+
+  const result = runScanner(repo);
+  const output = combinedOutput(result);
+  assertExit(result, 0);
+  for (const [, expectedLabel] of cases) assert.match(output, expectedLabel);
+  assert.match(output, new RegExp(`${cases.length} warning\\(s\\) found`));
+  assertRedacted(output, [...fixtureLines, ...fixtureLines.map((_, index) => `scanner-source-${index}`), repo]);
+});
+
+test('does not warn on output formatting cmdlets or Revoke-prefixed prose', function (t) {
+  const repo = makeRepo(t);
+  writeFile(repo, 'safe-formatting.md', [
+    'Get-MgUser | Format-Table -AutoSize',
+    'The Revoke-Examples heading describes a documentation category.',
+    '',
+  ].join('\n'));
+  stageAll(repo);
+
+  const result = runScanner(repo);
+  const output = combinedOutput(result);
+  assertExit(result, 0);
+  assert.match(output, /Clean/);
+  assert.doesNotMatch(output, /storage format|session or token revocation/);
+});
+
+test('classifies mailbox permission removal as access revocation, not mailbox deletion', function (t) {
+  const repo = makeRepo(t);
+  const sourceLine = 'Remove-MailboxPermission -Identity "[MAILBOX]" -User "[UPN]" -Confirm:$false';
+  writeFile(repo, 'mailbox-permission.ps1', `${sourceLine}\n`);
+  stageAll(repo);
+
+  const result = runScanner(repo);
+  const output = combinedOutput(result);
+  assertExit(result, 0);
+  assert.match(output, /mailbox permission revocation/);
+  assert.doesNotMatch(output, /permanent mailbox deletion/);
+  assertRedacted(output, [sourceLine, repo]);
 });
 
 test('rejects unknown arguments with deterministic exit 2', function (t) {

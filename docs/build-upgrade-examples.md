@@ -56,9 +56,14 @@ Each script bails *before* committing if any check fails. No half-applied upgrad
 
 ## Bad upgrade — what to avoid (composite anti-pattern)
 
+> **REFERENCE ONLY — NON-EXECUTING ANTI-PATTERN.** The operations named in this
+> section illustrate unsafe behavior. They are not instructions, must not be
+> copied into a shell, and authorize no file write, branch change, commit, push,
+> reset, or cross-branch action.
+
 **Ask:** same.
 
-**Anti-step 1 — Skip orientation.** Open CLAUDE.md, see "v6.2," assume it's behind, start rewriting from memory of what the project instructions said. **Result:** miss that Koinon already owns the placeholder dictionary; introduce a parallel `[YOUR_*]` token set in CLAUDE.md that conflicts with `[@Aegion_*]`. The pre-commit scanner doesn't catch it because the parallel tokens *look* like placeholders.
+**Anti-step 1 — Skip orientation.** Open CLAUDE.md, see "v6.2," assume it's behind, start rewriting from memory of what the project instructions said. **Result:** miss that Koinon already owns the placeholder dictionary and introduce a parallel tenant/org token family that conflicts with the canonical `[@Aegion_*]` system. A basic secret scanner may not catch the drift because both families look like placeholders.
 
 **Anti-step 2 — Edit the live file directly.** Use `Set-Content` to overwrite `$env:CLAUDE_PROJECT_DIR\CLAUDE.md` with the new version. No backup, no draft, no script. **Result:** if anything's wrong, the only recovery is `git checkout`, which is fine *unless* uncommitted local changes existed. Two minutes saved upfront, fifteen minutes lost recovering one user's work.
 

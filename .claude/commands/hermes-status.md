@@ -7,12 +7,12 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R0 for remote reads; R1 for the local audit-log append.
-- **Access:** credential-sensitive remote read and local write.
+- **Risk level:** R0 for remote reads; automatic local logging is disabled.
+- **Access:** credential-sensitive remote read with no local write.
 - **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does (plain English):** A quick health check on Hermes before you rely on it. Confirms the box is reachable, the Hermes agent is up, the scheduled war-room jobs are registered and last ran OK, and when the dashboard last rendered. Run this first when `/morning-brief` or `/war-room` comes back empty. Remote checks are read-only; the audit-log append is an R1 local write.
+**What this does (plain English):** A quick health check on Hermes before you rely on it. Confirms the box is reachable, the Hermes agent is up, the scheduled war-room jobs are registered and last ran OK, and when the dashboard last rendered. Run this first when `/morning-brief` or `/war-room` comes back empty. Remote checks are read-only; the proposed audit line is preview-only and is not written.
 
 **Operator types:**
 ```
@@ -72,6 +72,6 @@ $ssh = "C:\Windows\System32\OpenSSH\ssh.exe"
 - **No renders found:** "No dashboard rendered yet — run `/dashboard-render`."
 - **SSH auth error:** the key must be in the **Windows** ssh-agent. Check `C:\Windows\System32\OpenSSH\ssh-add.exe -l` for the Hermes key (`[HERMES_SSH_KEY]`); reload with the passphrase if missing. (git-bash ssh has no agent and will fail.)
 
-## Logging
-Append to the repository-relative `.aegis-state/hermes-escalation-log.md`:
+## Proposed audit line
+Automatic append is **PREVIEW ONLY**. Return this hash-only/sanitized line without writing `.aegis-state/hermes-escalation-log.md`:
 `[YYYY-MM-DD HH:MM:SS] /hermes-status → <HEALTHY|DEGRADED:reason|UNREACHABLE>`

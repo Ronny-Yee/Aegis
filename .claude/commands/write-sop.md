@@ -4,11 +4,11 @@ description: Produce a sanitized IT standard operating procedure with scope, pre
 
 IMPORTANT: Do NOT ask for employee details, names, emails, departments, or any identifying info. Deliver the FULL procedure IMMEDIATELY using only placeholders like [FIRST_NAME], [UPN], [DEVICE_NAME], [DEPARTMENT]. The user will substitute real values themselves.
 
-Write a Standard Operating Procedure (SOP) for [YOUR_ORG] IT. Tell me what process it covers and I'll write the full SOP document.
+Write a Standard Operating Procedure (SOP) for [@Aegion] IT. Tell me what process it covers and I'll write the full SOP document.
 
 ---
 
-## SOP Writer — [YOUR_ORG] IT
+## SOP Writer — [@Aegion] IT
 
 **Tell me:**
 1. What process does this SOP cover? (e.g., new user onboarding, device wipe, password reset, email quarantine)
@@ -21,8 +21,8 @@ Write a Standard Operating Procedure (SOP) for [YOUR_ORG] IT. Tell me what proce
 
 ```
 STANDARD OPERATING PROCEDURE
-[YOUR_ORG] — IT Department
-[YOUR_DOMAIN]
+[@Aegion] — IT Department
+[@Aegion_DOMAIN]
 
 Title: [Process Name]
 Version: 1.0

@@ -1,8 +1,11 @@
 ---
 description: Reset voicemail PIN, clear greetings, and reconfigure voicemail-to-email for an [@Aegion_VOIP] user. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /unite-voicemail-reset
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Voicemail resets are a straight portal operation — navigate to the user, reset the PIN, clear old greetings, confirm email notification is set. The whole thing takes under five minutes; the only thing that can go wrong is voicemail-to-email pointing at a stale address.
 
@@ -27,14 +30,19 @@ description: Reset voicemail PIN, clear greetings, and reconfigure voicemail-to-
 
 ### 2. Reset the voicemail PIN
 
-1. Click **Reset PIN** (or **Change PIN**).
-2. Set a new temporary PIN — use a generic default (e.g., `0000` or `1234`) that the user must change on first access, OR set a PIN the user provided verbally.
-3. Save.
-4. Inform the user of their new PIN via a channel other than voicemail (Teams message, in-person, or email).
+> **PREVIEW ONLY [voicemail-pin-reset]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
-> PIN requirements vary by plan — typically 4–10 digits, no repeating sequences. If the portal rejects the PIN, try a longer or more complex value.
+1. Click **Reset PIN** (or **Change PIN**).
+2. Generate a unique random temporary PIN that satisfies the current provider policy. Never use defaults, repeated/sequential digits, personal facts, or a PIN supplied in ticket/chat content.
+3. Confirm the portal will force a PIN change at first use; if it cannot, stop and use the provider's secure recovery path rather than issuing a reusable temporary secret.
+4. Save only inside the separately approved, target-bound credential runbook.
+5. Deliver the temporary PIN once through the approved secure out-of-band secret channel (for example, verified voice or in person), never Teams, ordinary email, or the ticket. Do not retain or quote it after delivery.
+
+> PIN requirements vary by plan. Read the live policy first and generate a compliant random value; do not weaken the policy or fall back to a predictable PIN when validation fails.
 
 ### 3. Clear existing greetings (if required)
+
+> **PREVIEW ONLY [voicemail-greeting-delete]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 1. On the **Voicemail** tab, locate the **Greetings** section.
 2. Delete or reset:
@@ -44,6 +52,8 @@ description: Reset voicemail PIN, clear greetings, and reconfigure voicemail-to-
 3. Leaving greetings cleared will revert to the system default greeting until the user re-records their own.
 
 ### 4. Confirm voicemail-to-email notification
+
+> **PREVIEW ONLY [voicemail-routing-change]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 1. In the **Voicemail** tab, find **Email Notification** or **Voicemail-to-Email**.
 2. Verify:
@@ -85,6 +95,8 @@ description: Reset voicemail PIN, clear greetings, and reconfigure voicemail-to-
 ---
 
 ## 📝 Jira-ready note
+
+Use the completed/closing template only after the portal read-back, PIN retrieval, test call, and voicemail-to-email delivery above are verified. Otherwise use a **Partial state — keep open** note listing the immutable extension, verified steps, pending checks, and failures.
 
 > **Voicemail reset completed — [JIRA-###]**
 >

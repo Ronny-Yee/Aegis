@@ -1,8 +1,11 @@
 ---
 description: Conditional Access plain-English explainer and step-by-step guide — view policies, create new policies, Report-only testing, What-If tool, break-glass accounts. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /conditional-access
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Conditional Access (CA) is Entra ID's if-this-then-that engine for sign-ins — if a user matches certain conditions (who, where, what device, what app), apply a control (require MFA, block, require compliant device). A misconfigured CA policy can lock out every user in the org including admins. Always test with Report-only first, and always confirm a break-glass account is excluded before enabling any policy.
 
@@ -47,6 +50,8 @@ Each policy shows: Applied / Not applied / Report-only, and the grant result.
 ## Common policies — what they do and how to create them
 
 ### Policy 1 — Block legacy authentication
+
+> **PREVIEW ONLY [ca-policy-legacy]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
 **Why:** Legacy auth protocols (SMTP AUTH, POP3, IMAP, MAPI over HTTP, ActiveSync) don't support MFA. Attackers use them to bypass MFA entirely. This is the highest-value CA policy to enable first.
 
 `Entra → Protection → Conditional Access → Policies → + New policy`
@@ -60,6 +65,8 @@ Each policy shows: Applied / Not applied / Report-only, and the grant result.
 ---
 
 ### Policy 2 — Require MFA for all users
+
+> **PREVIEW ONLY [ca-policy-mfa-all]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
 **Why:** Every sign-in from any device/location requires MFA. Stops credential-stuffing attacks cold.
 
 `Entra → Protection → Conditional Access → + New policy`
@@ -73,6 +80,8 @@ Each policy shows: Applied / Not applied / Report-only, and the grant result.
 ---
 
 ### Policy 3 — Require MFA for admins (separate policy, higher priority awareness)
+
+> **PREVIEW ONLY [ca-policy-mfa-admin]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
 **Why:** Admin accounts are the highest-value targets. Require MFA even if the main MFA policy has broad exclusions.
 
 - Users: **Directory roles** → select Global Admin, Exchange Admin, SharePoint Admin, User Admin, Security Admin (all privileged roles)
@@ -83,6 +92,8 @@ Each policy shows: Applied / Not applied / Report-only, and the grant result.
 ---
 
 ### Policy 4 — Require compliant device
+
+> **PREVIEW ONLY [ca-policy-compliant-device]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
 **Why:** Ensures users can only access M365 from Intune-enrolled and compliant devices.
 
 - Users: **All users** (or a pilot group first) | Exclude: break-glass
@@ -93,6 +104,8 @@ Each policy shows: Applied / Not applied / Report-only, and the grant result.
 ---
 
 ### Policy 5 — Block sign-ins from outside allowed countries
+
+> **PREVIEW ONLY [ca-policy-country]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
 **Why:** If your org only operates in specific countries, block sign-ins from everywhere else. Reduces attack surface significantly.
 
 Step 1 — Create a Named Location:
@@ -112,6 +125,8 @@ Step 2 — Create the CA policy:
 
 ## Create a new policy — step by step
 
+> **PREVIEW ONLY [ca-policy-create]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
+
 `Entra portal (entra.microsoft.com) → Protection → Conditional Access → Policies → + New policy`
 
 1. **Name:** use a descriptive name (`Require MFA — all users`, `Block legacy auth`, etc.) — this is what shows in sign-in logs
@@ -123,7 +138,14 @@ Step 2 — Create the CA policy:
 7. **Enable policy:** set to **Report-only**
 8. Click **Create**
 9. Wait 24–48 hours → review sign-in logs for the policy impact
-10. If impact looks correct → return to the policy → change state to **On** → Save
+<!-- SAFETY GATE [conditional-access-enable-portal] -->
+- **Target:** [POLICY_NAME] and its displayed immutable policy ID rendered as `$policyId`
+- **Effect:** change the reviewed Conditional Access policy from Report-only to On
+- **Scope:** the displayed users, resources, conditions, exclusions, and grant controls
+- **Reversibility:** reversible by disabling the policy with a verified emergency-access account
+- **Required confirmation:** Render the displayed immutable ID as `$policyId`, then type exactly `ENABLE CONDITIONAL ACCESS POLICY [POLICY_NAME] WITH ID $policyId`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [conditional-access-enable-portal]:** After the 24–48 hour review, break-glass check, written rollback, and second-admin checkpoint, re-open the policy and verify both `[POLICY_NAME]` and `$policyId`. Only the exact match authorizes changing that exact policy from **Report-only** to **On** and saving.
 
 ---
 
@@ -150,6 +172,8 @@ Use What-If to test edge cases before enabling a policy.
 
 ## Break-glass (emergency access) accounts
 
+> **PREVIEW ONLY [ca-break-glass]:** Policy creation, location creation, exclusions, and account changes are not authorized by this reference. Use a separate reviewed change with exported pre-state, Report-only evidence, break-glass verification, rollback, and an exact target-bound confirmation.
+
 A break-glass account is a cloud-only Global Admin that is **excluded from ALL CA policies**. It exists so you can sign in and fix a misconfigured CA policy even if every other admin is locked out.
 
 **Requirements:**
@@ -168,8 +192,30 @@ Confirm the break-glass UPN (not just a group) appears in every policy's exclusi
 <summary>PowerShell — for reference only</summary>
 
 ```powershell
-# Install the Microsoft Graph module if not already present
-Install-Module Microsoft.Graph -Scope CurrentUser
+# Resolve one exact Microsoft Graph version from the canonical PowerShell Gallery endpoint.
+$moduleName = 'Microsoft.Graph'
+$repositoryName = 'PSGallery'
+$expectedRepositorySource = 'https://www.powershellgallery.com/api/v2'
+$repository = Get-PSRepository -Name $repositoryName -ErrorAction Stop
+if ($repository.SourceLocation.TrimEnd('/') -cne $expectedRepositorySource) { throw "PSGallery source mismatch. No module was installed." }
+$moduleVersionText = Read-Host "Enter the independently reviewed exact $moduleName version (for example, 2.0.0)"
+if ($moduleVersionText -cnotmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') { throw "An exact stable module version is required. No module was installed." }
+$candidate = Find-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -ErrorAction Stop
+if ([string]$candidate.Name -cne $moduleName -or [string]$candidate.Version -cne $moduleVersionText) { throw "Module preflight did not resolve the exact requested package. No module was installed." }
+# SAFETY GATE [install-graph-conditional-access]
+# Target: exact $moduleName version $moduleVersionText from canonical $repositoryName
+# Effect: installs one local PowerShell module without changing tenant policy
+# Scope: CurrentUser on this workstation
+# Reversibility: reversible through a separately reviewed Uninstall-Module action
+$requiredConfirmation = "INSTALL POWERSHELL MODULE $moduleName VERSION $moduleVersionText FROM $repositoryName"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm the local CurrentUser install"
+if ($confirmation -ceq $requiredConfirmation) {
+    Install-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -Scope CurrentUser -ErrorAction Stop
+    $installed = Get-InstalledModule -Name $moduleName -RequiredVersion $moduleVersionText -ErrorAction Stop
+    if ([string]$installed.Version -cne $moduleVersionText) { throw "Installed-module read-back did not match the approved version." }
+} else {
+    throw "Confirmation did not match. No change was made."
+}
 
 # Connect with Conditional Access read permissions
 Connect-MgGraph -Scopes "Policy.Read.All", "Policy.ReadWrite.ConditionalAccess"   # sign in as CA admin
@@ -211,4 +257,4 @@ Get-MgIdentityConditionalAccessNamedLocation |
 - [ ] Break-glass sign-in alert confirmed active in Entra Monitoring
 
 ## 📝 Jira-ready note
-> Resolved [date/time]. [Created / Modified] Conditional Access policy "[POLICY_NAME]" in Entra. Policy scope: [users/groups] → [apps] → [conditions] → [grant control]. Tested in Report-only for [X] hours with no unexpected blocks confirmed in sign-in logs. Break-glass account [UPN] excluded and verified. Policy enabled and confirmed active. Time spent: [X] min.
+> Resolved [date/time]. Conditional Access policy "[POLICY_NAME]": definition [created/modified under its separate reviewed workflow / unchanged]; Report-only evidence [reviewed for X hours / not available]; break-glass exclusion [verified / not verified]; enablement [verified under the exact enable-policy gate / left Report-only / not performed]. Record only the states actually read back. Time spent: [X] min.

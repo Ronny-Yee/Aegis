@@ -1,8 +1,11 @@
 ---
 description: Diagnose why email lands in spam — inbound false positives and outbound deliverability. Headers, SPF/DKIM/DMARC, Message Trace, anti-spam policies, blocklists. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /email-to-spam
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Spam misclassification is almost always caused by one of four things: failed sender authentication (SPF/DKIM/DMARC), a high spam confidence score from EOP, a misconfigured mail flow rule, or a per-user Junk setting. Start with Message Trace to find the verdict, then follow the matching path.
 
@@ -55,6 +58,8 @@ Use the Microsoft Message Header Analyzer: paste headers at `https://mha.azurewe
 
 ### Step 3 — INBOUND path: fix based on verdict
 
+> **PREVIEW ONLY [email-spam-inbound-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
+
 **A. SCL 5–6 (landed in Junk folder)**
 The message was delivered but Outlook/OWA moved it. Possible causes:
 1. EOP spam verdict was marginal — consider adding sender to TABL (see `/email-whitelist` Method 1)
@@ -83,6 +88,8 @@ Message Trace shows a rule name. Check:
 ---
 
 ### Step 4 — OUTBOUND path: diagnose why YOUR mail lands in others' spam
+
+> **PREVIEW ONLY [email-spam-outbound-remediation]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 
 Check these in order:
 
@@ -128,14 +135,52 @@ If listed: follow the delist process for each blocklist. Most have a web form. M
 If a user account was compromised and used to send spam, M365 may have throttled or blocked outbound mail from that account. Review the **Restricted users** list:
 `Defender portal → Email & collaboration → Review → Restricted entities`
 
-A user appearing here had their outbound mail blocked. Remove them AFTER resetting password + revoking sessions + confirming no forwarding rules.
+A user appearing here had their outbound mail blocked. Complete password reset, session revocation, and forwarding-rule cleanup first.
+
+<!-- SAFETY GATE [restricted-entity-unblock-portal] -->
+- **Target:** [USER@DOMAIN.COM]
+- **Effect:** restore outbound sending after credential and persistence remediation
+- **Scope:** one secured sender account
+- **Reversibility:** reversible by restricting the sender again
+- **Required confirmation:** Type exactly `UNBLOCK OUTBOUND MAIL FOR [USER@DOMAIN.COM]`.
+- **Failure behavior:** Empty, declined, `yes`, or any other response means stop; no change is made.
+**PORTAL ACTION [restricted-entity-unblock-portal]:** Only after the exact match, remove `[USER@DOMAIN.COM]` from **Restricted entities**, then verify outbound behavior and sign-in logs.
 
 <details>
 <summary>PowerShell — for reference only</summary>
 
 ```powershell
-# Install Exchange Online module if not already present
-Install-Module ExchangeOnlineManagement -Scope CurrentUser
+# Resolve one exact Exchange Online module version from the canonical PowerShell Gallery endpoint. This fence performs only the local install.
+$moduleName = 'ExchangeOnlineManagement'
+$repositoryName = 'PSGallery'
+$expectedRepositorySource = 'https://www.powershellgallery.com/api/v2'
+$repository = Get-PSRepository -Name $repositoryName -ErrorAction Stop
+if ($repository.SourceLocation.TrimEnd('/') -cne $expectedRepositorySource) { throw "PSGallery source mismatch. No module was installed." }
+$moduleVersionText = Read-Host "Enter the independently reviewed exact $moduleName version (for example, 3.0.0)"
+if ($moduleVersionText -cnotmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') { throw "An exact stable module version is required. No module was installed." }
+$candidate = Find-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -ErrorAction Stop
+if ([string]$candidate.Name -cne $moduleName -or [string]$candidate.Version -cne $moduleVersionText) { throw "Module preflight did not resolve the exact requested package. No module was installed." }
+# SAFETY GATE [install-exchange-spam]
+# Target: exact $moduleName version $moduleVersionText from canonical $repositoryName
+# Effect: installs one local PowerShell module without changing sender restrictions
+# Scope: CurrentUser on this workstation
+# Reversibility: reversible through a separately reviewed Uninstall-Module action
+$requiredConfirmation = "INSTALL POWERSHELL MODULE $moduleName VERSION $moduleVersionText FROM $repositoryName"
+$confirmation = Read-Host "Type '$requiredConfirmation' to confirm the local CurrentUser install"
+if ($confirmation -ceq $requiredConfirmation) {
+    Install-Module -Name $moduleName -Repository $repositoryName -RequiredVersion $moduleVersionText -Scope CurrentUser -ErrorAction Stop
+    $installed = Get-InstalledModule -Name $moduleName -RequiredVersion $moduleVersionText -ErrorAction Stop
+    if ([string]$installed.Version -cne $moduleVersionText) { throw "Installed-module read-back did not match the approved version." }
+} else {
+    throw "Confirmation did not match. No change was made."
+}
+```
+</details>
+
+<details>
+<summary>PowerShell - read-only investigation</summary>
+
+```powershell
 
 # Connect to Exchange Online
 Connect-ExchangeOnline -UserPrincipalName "[UPN]"   # sign in as Exchange/Global admin
@@ -157,8 +202,40 @@ Get-HostedOutboundSpamFilterPolicy | Select-Object Name, ActionWhenThresholdReac
 # Check if a user is on the restricted senders list (blocked from outbound mail)
 Get-BlockedSenderAddress | Select-Object SenderAddress, ReasonCode, BlockedUntilDate  # ⚠️ these users cannot send outbound
 
+```
+</details>
+
+<details>
+<summary>PowerShell - separately gated restricted-sender unblock</summary>
+
+```powershell
+# This fence performs only the unblock. Run the read-only investigation separately first.
+Connect-ExchangeOnline -UserPrincipalName "[UPN]"
+
 # Remove a user from the restricted senders list (AFTER securing the account)
-Remove-BlockedSenderAddress -SenderAddress "[USER@DOMAIN.COM]"  # ⚠️ only do this after confirming account is secured
+# SAFETY GATE [restricted-entity-unblock]
+# Target: [USER@DOMAIN.COM]
+# Effect: restores outbound sending after account remediation
+# Scope: one secured sender account
+# Reversibility: not directly reversible; restricting the sender again is a separate reviewed containment action
+$requiredConfirmation = "UNBLOCK OUTBOUND MAIL FOR [USER@DOMAIN.COM]"
+$confirmation = Read-Host "Type '$requiredConfirmation' after verifying password reset, session revocation, and rule cleanup"
+if ($confirmation -ceq $requiredConfirmation) {
+    Remove-BlockedSenderAddress -SenderAddress "[USER@DOMAIN.COM]" -ErrorAction Stop  # ⚠️ only after confirming the account is secured
+    $stillRestricted = @(Get-BlockedSenderAddress -ErrorAction Stop | Where-Object { [string]$_.SenderAddress -ceq '[USER@DOMAIN.COM]' })
+    if ($stillRestricted.Count -ne 0) { throw "Unblock returned but read-back still shows the sender restricted." }
+} else {
+    throw "Confirmation did not match. No change was made."
+}
+
+```
+</details>
+
+<details>
+<summary>PowerShell - additional read-only checks</summary>
+
+```powershell
+Connect-ExchangeOnline -UserPrincipalName "[UPN]"
 
 # Check a user's junk email configuration (why Junk filter is catching something)
 Get-MailboxJunkEmailConfiguration -Identity "[UPN]" |

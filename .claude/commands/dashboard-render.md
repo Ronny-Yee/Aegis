@@ -1,5 +1,5 @@
 ---
-description: Trigger a fresh War Room dashboard render on Aegis D Hermes via the existing render_war_room_dashboard.py script, then report the generated HTML.
+description: Create one new, non-colliding War Room dashboard artifact on Aegis D Hermes through the hardened bridge.
 disable-model-invocation: true
 ---
 
@@ -7,69 +7,80 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R1 — creates one remote dashboard artifact and appends one local log entry.
-- **Access:** remote write, credential-sensitive remote execution, and local write.
-- **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
+- **Risk level:** R1 remote write - creates one new dashboard artifact only after exact confirmation; automatic local logging is disabled.
+- **Access:** credential-sensitive remote execution and one no-clobber remote write.
+- **Credential-sensitive:** yes - uses the operator's SSH agent and never reads or prints key material.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does (plain English):** Kicks off a fresh war-room dashboard render on Hermes using the existing pipeline (`render_war_room_dashboard.py`), then tells [ADMIN_NAME] where the new HTML landed. Use it for an up-to-the-minute dashboard instead of waiting for the scheduled morning run.
+Use `/dashboard-render` for today or `/dashboard-render YYYY-MM-DD` for one exact trading date.
 
-**Operator types:**
-```
-/dashboard-render             # render for today
-/dashboard-render 2026-05-26  # render for a specific target trading day
-```
+## Safety boundary
 
-**Expected output:**
-```
-🛠️ War Room render — target 2026-05-22
-→ render complete: war_room_20260522.html (delivery dir)
-→ open it now with /war-room
-```
+The renderer is a remote state mutation. This path is R1 only when the expected `war_room_YYYYMMDD.html` destination does not already exist. The hardened wrapper atomically reserves that final name with exclusive no-follow creation; an existing file, link, or concurrent creator wins with exit `73`. The renderer must populate the same invocation-owned inode, so the check cannot become an overwrite of a pre-existing path. Overwriting a same-date dashboard is a separate R2 action requiring a checkpoint and a distinct `OVERWRITE` confirmation, and is not implemented here.
 
-## ⚠️ Scope — the one command that writes to Hermes
-This is the **only** war-room command that writes on Hermes: it generates a new dashboard HTML file via the render script. Additive artifact generation is still a **remote state mutation**, classified R1 because its rollback is deletion of the newly generated artifact. It does not change holdings, positions, config, cron, or a running service. The operator must invoke it explicitly.
+The wrapper also refuses an unknown renderer interface. The earlier “run it bare if `--date` is unsupported” fallback is removed because it would break the confirmed date and destination binding.
 
-> Aegis-build note: during the v8/v8.1 autonomous runs the renderer was inspected and `py_compile`-checked but not executed. No live render was performed as part of this remediation.
+## Execution contract
 
-## How Aegis executes
-
-1. Parse the optional date arg (default = today), normalize to `YYYY-MM-DD` / the script's expected form.
-2. SSH to Hermes (Windows OpenSSH) and run `render_war_room_dashboard.py` from `[HERMES_SCRIPTS_DIR]`.
-3. Wait for completion (quick once data is cached; allow up to ~3 min if fetchers run).
-4. Report the generated filename + delivery path. Suggest `/war-room` to open it.
+1. Accept zero or one argument. Default locally to today; reject additional arguments.
+2. Validate an explicitly supplied value with invariant `DateTime.TryParseExact('yyyy-MM-dd')` and exact round-trip. Do not trim an invalid supplied date.
+3. Derive exactly one expected basename from the validated date.
+4. Send date and validated remote directories as Base64-encoded JSON on SSH stdin to a constant Python wrapper.
+5. Display the date, expected basename, scope, reversibility, and action SHA-256. The digest binds the target and full structured request, including both remote directories. Require the exact phrase emitted by the bridge.
+6. Before running the renderer, the remote wrapper atomically reserves the final path with `O_CREAT|O_EXCL|O_NOFOLLOW` and invokes Python with an argv list, never a shell-built command.
+7. Claim success only when SSH exits zero and the exact expected artifact is the same reserved, regular, non-symlink, nonempty file.
 
 <details>
-<summary>Underlying commands — for reference (plain-English comments per line)</summary>
+<summary>PowerShell - operator-invoked R1 render</summary>
 
 ```powershell
-$ssh = "C:\Windows\System32\OpenSSH\ssh.exe"
-$date = if ($args[0]) { $args[0] } else { (Get-Date -Format yyyy-MM-dd) }      # default to today
-
-# Run the EXISTING renderer (the same script the morning job uses); generates a fresh dated HTML
-& $ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] `
-  "python3 '[HERMES_SCRIPTS_DIR]/render_war_room_dashboard.py' --date $date"
-  # writes a new war_room_<date>.html into the delivery dir; no other state touched
-
-# Confirm the file landed (read-only)
-& $ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] `
-  "ls -lt --time-style=long-iso '[HERMES_DELIVERY_DIR]'/war_room_*.html | head -1"
+# Resolve the repository without relying on a fixed local path.
+$repoRoot = git rev-parse --show-toplevel
+# Use the reviewed bridge that owns validation, the exact gate, no-clobber behavior, and read-back.
+$bridge = Join-Path $repoRoot 'scripts\hermes-bridge.ps1'
+# Permit no argument or one exact date; anything else stops before the bridge.
+if ($args.Count -gt 1) { throw 'Use /dashboard-render or /dashboard-render YYYY-MM-DD.' }
+# Preserve an explicitly supplied date exactly; the bridge validates it with TryParseExact.
+$date = if ($args.Count -eq 1) { [string]$args[0] } else { Get-Date -Format 'yyyy-MM-dd' }
+# Derive the visible target without contacting Hermes.
+$expectedName = 'war_room_{0}.html' -f $date.Replace('-', '')
+# Keep the committed target symbolic; the bridge binds the resolved private target to a second action digest.
+$targetLabel = '[HERMES_HOST]'
+# SAFETY GATE [dashboard-render-artifact]
+# Target: $targetLabel and $expectedName for $date.
+# Effect: Creates one new remote dashboard artifact and refuses an existing destination.
+# Scope: Exactly one date and one expected filename; no overwrite and no retry.
+# Reversibility: Removing the exact artifact is a separate destructive action requiring new approval.
+$requiredConfirmation = "CREATE WAR ROOM DASHBOARD $date AT $expectedName ON $targetLabel"
+$confirmation = Read-Host "Type exactly: $requiredConfirmation"
+if ($confirmation -ceq $requiredConfirmation) {
+    # The bridge repeats confirmation against a digest of the resolved private target before SSH.
+    & $bridge -Action Render -Date $date -SshUser '[HERMES_SSH_USER]' -SshHost '[HERMES_HOST]' -ScriptsDir '[HERMES_SCRIPTS_DIR]' -DeliveryDir '[HERMES_DELIVERY_DIR]'
+}
+else {
+    throw 'Exact dashboard-render confirmation did not match; no renderer was run.'
+}
 ```
-> Check the script's real flags first with `python3 [HERMES_SCRIPTS_DIR]/render_war_room_dashboard.py --help` — if it takes no `--date`, run it bare (it defaults to today).
+
 </details>
 
-## Remote-write safety
-- **R1 remote write:** generates one new dashboard file. No holdings/positions/config/cron changes and **no service restart**.
-- **Undo:** remove only the exact newly generated artifact after confirming its path and filename; never use a wildcard deletion.
-- Renders only — does NOT deliver to Telegram. Delivery is a separate, deliberate step.
-- Hermes host/paths stay as `[HERMES_*]` placeholders. On a partial/failed render, report the exact error and don't retry more than once (Error Recovery Protocol).
+Required confirmation shape:
 
-## Failure modes (handle gracefully, never block)
-- **SSH unreachable:** "Hermes is offline — can't render. Check `/hermes-status`." Stop.
-- **Render errors (missing data / disk):** report the exact stderr + which fetcher failed; suggest `/hermes-status`. Don't mark complete on a failed render.
-- **Timeout >4 min:** "Render is slow — fetchers may be rate-limited. Check `/hermes-status` and retry once."
-- **SSH auth error:** key must be in the Windows ssh-agent (see `/hermes-status`).
+`CREATE WAR ROOM DASHBOARD <YYYY-MM-DD> ACTION SHA256 <resolved-action-sha256>`
 
-## Logging
-Append to the repository-relative `.aegis-state/hermes-escalation-log.md`:
-`[YYYY-MM-DD HH:MM:SS] /dashboard-render <date> → <RENDERED file|FAILED reason|UNREACHABLE>`
+Empty input, generic `yes`, case changes, added whitespace, or a hash mismatch means no renderer runs.
+
+## Verification and undo
+
+- **R1 remote write:** one previously absent `war_room_YYYYMMDD.html` only.
+- **Undo:** removal of that exact artifact is destructive and must be proposed as a separate exact-path action; this command never performs cleanup automatically.
+- A failed renderer may leave a partial artifact. Report its expected basename and stop; do not delete or retry automatically.
+- The command does not deliver to Telegram, place trades, edit configuration/cron, or restart a service.
+
+## Local audit record
+
+Automatic append to `.aegis-state/hermes-escalation-log.md` is **PREVIEW ONLY**. Return this proposed record without writing it:
+
+`[YYYY-MM-DD HH:MM:SS] /dashboard-render <date> -> <RENDERED name|FAILED code|UNREACHABLE>`
+
+Any future append requires a separate exact local-write gate.

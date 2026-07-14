@@ -1,5 +1,5 @@
 ---
-description: Open the current Aegis D Hermes war room dashboard in the default browser — live URL if served, else the latest rendered HTML pulled read-only from Hermes.
+description: Open a validated War Room HTTPS URL or copy and open one verified dashboard from Aegis D Hermes.
 disable-model-invocation: true
 ---
 
@@ -7,65 +7,118 @@ disable-model-invocation: true
 
 ## Risk metadata
 
-- **Risk level:** R0 for the remote read; R1 when a local HTML copy or audit-log entry is created.
-- **Access:** credential-sensitive remote read and local write/browser launch.
-- **Credential-sensitive:** yes — uses the operator's SSH agent; never prints key material.
+- **Risk level:** R0 remote selection; R1 for one confirmed local HTML copy and each confirmed browser launch. Automatic local logging is disabled.
+- **Access:** credential-sensitive remote read, no-clobber local write, and local browser launch.
+- **Credential-sensitive:** yes - uses the operator's SSH agent and never reads or prints key material.
 - **Invocation:** operator-only; Claude must not invoke this command automatically.
 
-**What this does (plain English):** Opens the most recent War Room v30 dashboard so [ADMIN_NAME] can read it in 5 minutes. If Hermes serves the dashboard over HTTP, it opens that URL. Otherwise it reads the newest rendered HTML from Hermes, creates a local temporary copy, and opens that copy in the browser. The remote operation is read-only; the local copy and audit log are R1 local writes.
+The URL and copy paths are separate. A URL is validated before its launch gate. A pulled dashboard receives one content-bound copy gate, then a second open gate only after the local file exactly matches the selected remote size and SHA-256.
 
-**Operator types:**
-```
-/war-room
-```
+## Path A - configured URL
 
-**Expected output:**
-```
-🗺️ War Room dashboard
-Opening: war_room_v30_2026-05-22.html (rendered 2026-05-22 20:00)
-→ launched in default browser
-```
+`WAR_ROOM_URL` must be either:
 
-## How Aegis executes
+- default-port HTTPS whose IDN-normalized host exactly matches `WAR_ROOM_ALLOWED_HOST`; or
+- HTTP on a loopback host for local development.
 
-1. **If `WAR_ROOM_URL` env var is set** (Hermes serves the dashboard over HTTP), open it directly:
-   - `Start-Process $env:WAR_ROOM_URL`
-2. **Otherwise**, pull the newest rendered dashboard read-only from Hermes and open the local copy:
-   - find the newest `war_room_*.html` in `[HERMES_DELIVERY_DIR]` (daily `war_room_YYYYMMDD.html` + legacy `war_room_v30_*.html`)
-   - `scp` it to a local temp dir (read-only copy off Hermes — no write to Hermes)
-   - open the local file in the default browser
-3. Report which file opened and its render timestamp.
+The bridge rejects relative URLs, user information, fragments, controls, nondefault remote ports, `file:`, `data:`, `javascript:`, and every other scheme. It then requires:
 
-> Note: this is the **trading war-room dashboard** (rendered HTML in `[HERMES_DELIVERY_DIR]`). It is NOT `hermes dashboard`, which is Hermes's own config/API-key web UI on localhost — different thing, don't use it here.
+`CREATE BROWSER LAUNCH FOR <validated-absolute-url>`
+
+## Path B - read-only remote selection, local copy, then open
+
+1. A constant remote Python selector receives the validated delivery directory through SSH stdin.
+2. It considers only regular, non-symlink files whose basename matches `war_room_(v30_)?<safe-suffix>.html`.
+3. It opens the selected regular file without following symlinks, streams a full SHA-256, verifies the file did not change during hashing, and returns one JSON object containing the basename, bounded positive size, mtime, and lowercase SHA-256. The local bridge strictly validates the exact metadata shape and values.
+4. The bridge generates `aegis-war-room-<GUID>.html` under the canonical local temp directory and proves the path is absent.
+5. The exact copy source is built only from the validated target, fixed delivery directory, and validated basename. `scp` uses its default strict filename behavior; `-T`, `-O`, and `-r` are forbidden.
+6. Immediately before `scp`, the bridge repeats the destination absence check and requires:
+
+   `CREATE WAR ROOM COPY <absolute-guid-destination> SOURCE SHA256 <source-sha256> CONTENT SHA256 <remote-content-sha256> SIZE <remote-size>`
+
+7. A failed transfer stops and leaves any partial file visible for diagnosis. It is never silently deleted.
+8. The bridge verifies a regular, non-reparse, nonempty file no larger than 50 MiB, then requires its exact size and full SHA-256 to match the content approved in the copy gate. A mismatch remains visible at the GUID path and is never opened.
+9. Opening the verified copy requires a separate phrase:
+
+   `CREATE BROWSER LAUNCH FOR <absolute-guid-destination> SHA256 <download-sha256>`
 
 <details>
-<summary>Underlying commands — for reference (plain-English comments per line)</summary>
+<summary>PowerShell - operator-invoked hardened War Room</summary>
 
 ```powershell
-# Path A — Hermes serves the dashboard over HTTP (preferred when available)
-Start-Process $env:WAR_ROOM_URL          # open the configured dashboard URL in the default browser
-
-# Path B — no HTTP endpoint: copy the latest rendered HTML off Hermes (READ-ONLY) and open it
-# 1) ask Hermes for the newest dashboard filename (read-only 'ls', no write to Hermes)
-$latest = ssh -o ConnectTimeout=15 [HERMES_SSH_USER]@[HERMES_HOST] `
-  "ls -t '[HERMES_DELIVERY_DIR]'/war_room_*.html | head -1"   # newest dashboard file path
-# 2) copy that one file down to a local temp folder (scp = read-only pull)
-$dest = Join-Path $env:TEMP ("war_room_" + (Get-Date -Format yyyyMMdd_HHmmss) + ".html")
-scp [HERMES_SSH_USER]@[HERMES_HOST]:"$latest" $dest   # pull the HTML; nothing written back to Hermes
-# 3) open the local copy in the default browser
-Start-Process $dest                       # launch the dashboard locally
+# Resolve the reviewed implementation from the current repository.
+$repoRoot = git rev-parse --show-toplevel
+# The bridge owns URL validation, static remote selection, copy collision checks, and both exact launch gates.
+$bridge = Join-Path $repoRoot 'scripts\hermes-bridge.ps1'
+# Invoke one operator-only flow; no real host or remote path is written into this command file.
+& $bridge -Action WarRoom -WarRoomUrl $env:WAR_ROOM_URL -AllowedWebHost $env:WAR_ROOM_ALLOWED_HOST -SshUser '[HERMES_SSH_USER]' -SshHost '[HERMES_HOST]' -DeliveryDir '[HERMES_DELIVERY_DIR]'
 ```
+
 </details>
 
-## Remote-read / local-write safety
-- Remote read-only: only `ls` and `scp` pull from Hermes. The temporary HTML copy, browser launch, and audit log are local effects. Nothing is written to Hermes and no service restarts. Authentication uses the loaded SSH agent; no key material is read or printed.
-- Hermes internals (host, paths) stay as `[HERMES_*]` placeholders — resolved at runtime via `~/.ssh/config` and env vars. Never echo the real host/paths into chat or any artifact.
+<details>
+<summary>PowerShell - state-changing phase owned by the bridge (do not run separately)</summary>
 
-## Failure modes (handle gracefully, never block)
-- **`WAR_ROOM_URL` unset AND SSH unreachable:** "War Room dashboard isn't reachable right now (no URL configured and Hermes is offline). Last local copy, if any, is in `%TEMP%`." Then stop — don't fake a render.
-- **No `war_room_v30_*.html` found in the delivery dir:** "No rendered dashboard found on Hermes yet. Run `/dashboard-render` to generate one."
-- **SSH auth error:** point to the same ssh-agent fix as `/ask-hermes` (`ssh-add -l`; reload key if missing).
+The validated variables below are produced inside `scripts/hermes-bridge.ps1`. This excerpt keeps each native local effect visible to the structural safety inventory.
 
-## Logging
-Append a one-liner to the repository-relative `.aegis-state/hermes-escalation-log.md`:
-`[YYYY-MM-DD HH:MM:SS] /war-room → <OPENED url|file | UNREACHABLE>`
+```powershell
+# SAFETY GATE [war-room-open-url]
+# Target: $validatedUrl.
+# Effect: Creates one default-browser launch for the validated HTTPS or loopback URL.
+# Scope: One browser launch and no local file creation.
+# Reversibility: Close the browser tab or window.
+$requiredConfirmation = "CREATE BROWSER LAUNCH FOR $validatedUrl"
+$confirmation = Read-Host "Type exactly: $requiredConfirmation"
+if ($confirmation -ceq $requiredConfirmation) {
+    Start-Process -FilePath $validatedUrl
+}
+else {
+    throw 'Exact URL-open confirmation did not match; no browser was launched.'
+}
+
+# SAFETY GATE [war-room-copy]
+# Target: $destination, remote source digest $sourceHash, content digest $remoteContentHash, and byte count $remoteSize.
+# Effect: Creates one new local HTML copy and refuses an existing destination.
+# Scope: One validated source basename and content identity, one GUID destination, no recursion or overwrite.
+# Reversibility: Removing the exact copy is a separate destructive action requiring new approval.
+$requiredConfirmation = "CREATE WAR ROOM COPY $destination SOURCE SHA256 $sourceHash CONTENT SHA256 $remoteContentHash SIZE $remoteSize"
+$confirmation = Read-Host "Type exactly: $requiredConfirmation"
+if ($confirmation -ceq $requiredConfirmation) {
+    scp @scpArguments
+}
+else {
+    throw 'Exact copy confirmation did not match; no local file was created.'
+}
+
+# SAFETY GATE [war-room-open-file]
+# Target: $destination with verified content digest $downloadHash.
+# Effect: Creates one default-browser launch for the verified local HTML file.
+# Scope: One browser launch; the downloaded file remains unchanged.
+# Reversibility: Close the browser tab or window.
+$requiredConfirmation = "CREATE BROWSER LAUNCH FOR $destination SHA256 $downloadHash"
+$confirmation = Read-Host "Type exactly: $requiredConfirmation"
+if ($confirmation -ceq $requiredConfirmation) {
+    Start-Process -FilePath $destination
+}
+else {
+    throw 'Exact file-open confirmation did not match; the copy remains unopened.'
+}
+```
+
+</details>
+
+## Failure behavior
+
+- Invalid configured URL: stop; never fall through to opening it as a file or command.
+- URL absent and SSH unavailable: report that no current dashboard was opened.
+- No valid dashboard candidate: suggest `/dashboard-render`; do not broaden the filename pattern.
+- Selection/copy mismatch: stop before browser launch.
+- Copy succeeded but open confirmation failed: report the exact local path and hash; leave the file unopened.
+
+## Local audit record
+
+Automatic append to `.aegis-state/hermes-escalation-log.md` is **PREVIEW ONLY**. Return this proposed record without writing it:
+
+`[YYYY-MM-DD HH:MM:SS] /war-room -> <OPENED url|file | COPIED-NOT-OPENED | UNREACHABLE>`
+
+Any future append requires a separate exact local-write gate naming the resolved log path and entry hash.

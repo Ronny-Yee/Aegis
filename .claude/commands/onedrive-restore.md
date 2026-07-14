@@ -1,8 +1,11 @@
 ---
 description: Restore OneDrive / SharePoint files — version history, recycle bins, Files Restore (whole library to a point in time), and a departed user's OneDrive. Portal first. Placeholders only.
+disable-model-invocation: true
 ---
 
 # /onedrive-restore
+
+> **Execution boundary:** Read-only diagnostics remain available. Every state-changing line below is a non-executing preview unless an immediately adjacent `SAFETY GATE` names the target, effect, scope, reversibility, and exact confirmation. Unmarked mutations must move to a separate reviewed runbook before execution; do not click, paste, or run them from this command.
 
 **Verdict:** Match the tool to the loss. **One file/older version** → version history. **Deleted recently** → Recycle bin (then second-stage). **Ransomware / mass overwrite** → Files Restore (roll the whole OneDrive back to a point in time, up to 30 days). **Departed user** → grant manager access, then restore/transfer.
 
@@ -11,6 +14,8 @@ description: Restore OneDrive / SharePoint files — version history, recycle bi
 - Is it OneDrive (personal) or a SharePoint library (shared)?
 
 ## Step-by-step (portal/web first)
+
+> **PREVIEW ONLY [onedrive-restore-actions]:** The state-changing path below is not authorized by this reference. Move the intended action to a separate reviewed runbook with resolved target, effect, scope, reversibility/checkpoint, and an action-specific exact confirmation.
 1. **Older version of a file:** in OneDrive/SharePoint web → right-click the file → **Version history** → restore the good version.
 2. **Recently deleted:** OneDrive → **Recycle bin** → restore. If not there → **Second-stage recycle bin** (bottom of recycle bin) — items live ~93 days total.
 3. **Mass loss / ransomware (whole OneDrive back in time):** OneDrive → Settings (gear) → **Restore your OneDrive** → pick a date (uses the activity histogram) → Restore. Undoes all changes after that point.
@@ -22,13 +27,14 @@ description: Restore OneDrive / SharePoint files — version history, recycle bi
 ```powershell
 # Grant a manager access to a departed user's OneDrive (admin)
 Connect-SPOService -Url "https://[@Aegion_DOMAIN_SP]-admin"          # SharePoint admin endpoint
-Set-SPOUser -Site "https://[@Aegion_DOMAIN_SP]/personal/[UPN_PATH]" -LoginName "[MANAGER_NAME]" -IsSiteCollectionAdmin $true  # grant access
+# PREVIEW ONLY [onedrive-manager-admin] — non-executing permission-grant reference; use a separate reviewed runbook with a removal rollback.
+# Set-SPOUser -Site "https://[@Aegion_DOMAIN_SP]/personal/[UPN_PATH]" -LoginName "[MANAGER_NAME]" -IsSiteCollectionAdmin $true
 # (File-level restore is done in the web UI / Files Restore — no destructive PS needed)
 ```
 </details>
 
 ## ⚠️ Risk warning
-- **Files Restore is itself a bulk change** — it reverts everything after the chosen point; confirm the date with the user first (it can undo good edits made after the incident). This hits the confirmation gate.
+- **Files Restore is itself a bulk change** — it reverts everything after the chosen point and can undo good edits. This reference has no execution gate: move the exact tenant/user, restore point, staged item/count evidence, checkpoint, and rollback limits to a separate target-bound gate before any restore.
 - Second-stage recycle bin and retention windows expire — act before the clock runs out.
 
 ## ✅ Verification checklist

@@ -1,14 +1,19 @@
 ---
 description: Provide placeholder-only enterprise IT operations guidance for Microsoft 365, Entra, Intune, Meraki, VoIP, Jira, automation, and documentation tasks.
+disable-model-invocation: true
 ---
 
-# [YOUR_ORG] IT Ops — Skill Knowledge Base
+# [@Aegion] IT Ops — Skill Knowledge Base
+
+## Execution boundary
+
+This knowledge base is planning/reference only and cannot authorize or perform a state change. For execution, invoke the exact canonical command listed below. That command must independently show the resolved target, effect, scope, reversibility, checkpoint/rollback, and an action-specific exact confirmation immediately before its one action. Generic approval such as `yes`, `proceed`, or approval of a plan is never sufficient.
 
 ## Environment
 
 | Item | Detail |
 |------|--------|
-| Tenant | [YOUR_DOMAIN] |
+| Tenant | [@Aegion_DOMAIN] |
 | Users | [@Aegion_SIZE] on M365 Business Premium |
 | Identity | Hybrid AD + Entra Connect sync (create users in on-prem AD first) |
 | Devices | Windows (majority), few Macs, iPhones, Android (Moto G), MDM work phones |
@@ -41,7 +46,7 @@ description: Provide placeholder-only enterprise IT operations guidance for Micr
 | VoIP migration — [@Aegion_SITE_2] + [@Aegion_SITE_3] | In progress | [@Aegion_NETPARTNER] handles cabling |
 | P2P → Site-to-site VPN | In progress | [@Aegion_REMOTE_ACCESS] still running; Meraki S2S is the target |
 | [@Aegion_ALARM] upgrade | Planning | Tie to VoIP migration — eliminate [@Aegion_ISP] landlines |
-| Aegis | Active | GitHub: [YOUR_GITHUB]/aegis-ops |
+| Aegis | Active | GitHub repository URL supplied at runtime |
 | Jira Service Management | In progress | 2026 rollout — DevOps / Get IT Help space |
 
 ---
@@ -50,7 +55,7 @@ description: Provide placeholder-only enterprise IT operations guidance for Micr
 
 - Portal/admin center steps FIRST — PowerShell in `<details>` collapse blocks
 - ⚠️ on anything destructive (wipe, delete, disable, remove, reset)
-- Always confirm before destructive actions
+- Require an action-specific exact confirmation immediately before each destructive action
 - Placeholders only — never real employee names, emails, or UPNs
 - Short bullets, clear headers, phone-readable
 - Plain-English comment on every PowerShell line
@@ -68,48 +73,31 @@ description: Provide placeholder-only enterprise IT operations guidance for Micr
 | `[MANAGER_NAME]` | Manager's name |
 | `[UPN]` | Manager's UPN when that context is explicitly needed |
 | `[DEVICE_NAME]` | Device hostname |
-| `[admin@YOUR_DOMAIN]` | IT admin UPN |
+| `[USER@DOMAIN.COM]` | IT admin UPN |
 
 ---
 
-## Common Procedures — Quick Reference
+## Common Procedures — Canonical Routes
 
-### New User Flow (Hybrid AD)
-1. Create in on-prem AD (ADUC)
-2. Force Entra Connect sync: `Start-ADSyncSyncCycle -PolicyType Delta`
-3. Assign M365 Business Premium license
-4. Add to security groups + distribution lists
-5. Set up MFA (Microsoft Authenticator + SMS)
-6. Enroll device in Intune — rename DT/LT-FirstName,LastName
-7. Add to [@Aegion_VOIP] (extension + voicemail PIN)
-8. Grant SharePoint/Teams access
+This skill deliberately contains no executable or portal mutation procedure.
 
-### Offboarding Flow
-1. Block sign-in (Entra ID)
-2. Revoke all sessions
-3. Reset password (lock out)
-4. Clear MFA methods
-5. Convert mailbox to shared → grant manager access
-6. Remove all M365 licenses
-7. Remove from all groups/DLs
-8. Transfer OneDrive to manager
-9. ⚠️ Wipe/retire device in Intune
-10. ⚠️ Disable on-prem AD account → move to Disabled Users OU
+| Intended operation | Canonical command |
+|---|---|
+| New-user onboarding | `/new-user` |
+| Offboarding | `/offboard` |
+| Entra Connect sync | `/ad-connect` |
+| MFA method reset or session revocation | `/mfa-issue` |
+| Password reset | `/password-reset` |
+| Quarantine release or deletion | `/email-quarantine` |
+| Device wipe or retire | `/device-wipe` |
+| Shared mailbox creation or conversion | `/shared-mailbox` |
+| Mailbox delegation | `/mailbox-permissions` |
+| Group or distribution-list changes | `/group-membership-audit` or `/distribution-list` |
+| SharePoint or Teams access | `/sharepoint-access` or `/teams-issue` |
+| Conditional Access change | `/conditional-access` |
+| License change | `/license-audit` |
 
-### MFA Reset
-1. entra.microsoft.com → Users → [UPN] → Authentication methods → delete all
-2. Send user to aka.ms/mfasetup to re-register
-
-### Password Reset
-- admin.microsoft.com → Users → [UPN] → Reset password → auto-generate → force change on login
-
-### Email Quarantine
-- security.microsoft.com → Email & collaboration → Review → Quarantine → Release
-
-### Device Wipe
-- intune.microsoft.com → Devices → All devices → [DEVICE_NAME]
-- ⚠️ Full Wipe = factory reset (work-owned only)
-- Retire = removes company data, keeps personal (BYOD only)
+Session revocation requests invalidation of Entra refresh tokens and browser cookies after propagation. Current access tokens and app-issued sessions may persist until expiry or until the application enforces revocation.
 
 ---
 
@@ -127,7 +115,7 @@ description: Provide placeholder-only enterprise IT operations guidance for Micr
 > State the issue, sanitized user/site impact, start time, and approved vendor case reference. Request Tier 2 escalation and a resolution timeline.
 
 **Microsoft:**
-> Use [YOUR_DOMAIN] and [admin@YOUR_DOMAIN], then state the issue, sanitized impact, start time, and troubleshooting already completed.
+> Use [@Aegion_DOMAIN] and [USER@DOMAIN.COM], then state the issue, sanitized impact, start time, and troubleshooting already completed.
 
 **Internal:**
-> Hi [FIRST_NAME], I'm working on a ticket and want to check before I proceed. Summarize the situation, completed steps, and specific blocker without real identities.
+> Hi [FIRST_NAME], I'm working on a ticket and need one detail before I can continue. Summarize the situation, completed steps, and specific blocker without real identities.
